@@ -1,1 +1,247 @@
-{"version":"3.0","status":"PYQ-pattern starter database","note":"Original PYQ-pattern questions; not verbatim official PYQs.","questions":[{"id":"NEET-BIO-001","exam":"NEET","subject":"Biology","chapter":"Genetics","type":"Assertion–Reason","q":"Assertion: A test cross helps determine an unknown dominant phenotype genotype. Reason: The individual is crossed with a homozygous recessive partner.","options":["Both true; Reason explains Assertion","Both true; Reason does not explain Assertion","Assertion true; Reason false","Assertion false; Reason true"],"answer":0,"solution":"A test cross uses a homozygous recessive partner so offspring reveal the unknown genotype."},{"id":"NEET-PHY-001","exam":"NEET","subject":"Physics","chapter":"Current Electricity","type":"Numerical","q":"Two resistors 6 ohm and 3 ohm are connected in parallel across 12 V. Total current is:","options":["2 A","4 A","6 A","8 A"],"answer":2,"solution":"Equivalent resistance is 2 ohm, so I=12/2=6 A."},{"id":"NEET-CHEM-001","exam":"NEET","subject":"Chemistry","chapter":"Chemical Bonding","type":"Statement Based","q":"Which are correct? I. NH3 is pyramidal. II. BF3 is planar. III. CH4 is bent.","options":["I and II only","II and III only","I and III only","I, II and III"],"answer":0,"solution":"NH3 is trigonal pyramidal, BF3 trigonal planar and CH4 tetrahedral."},{"id":"JEE-PHY-001","exam":"JEE Main","subject":"Physics","chapter":"Kinematics","type":"Numerical","q":"A particle starts from rest with acceleration 2 m/s². Displacement in the fifth second is:","options":["7 m","8 m","9 m","10 m"],"answer":2,"solution":"Distance in nth second = u + a(2n-1)/2 = 9 m."},{"id":"JEE-CHEM-001","exam":"JEE Main","subject":"Chemistry","chapter":"Electrochemistry","type":"Numerical","q":"If E°cathode=1.20 V and E°anode=0.30 V as reduction potentials, E°cell is:","options":["0.90 V","1.50 V","-0.90 V","0.30 V"],"answer":0,"solution":"E°cell=E°cathode-E°anode=0.90 V."},{"id":"JEE-MATH-001","exam":"JEE Main","subject":"Mathematics","chapter":"Matrices","type":"Statement Based","q":"For square matrices A and B: I. det(AB)=det(A)det(B). II. det(A+B)=det(A)+det(B) always.","options":["I only","II only","Both","Neither"],"answer":0,"solution":"Determinants are multiplicative, but determinant of a sum is not generally additive."}]}
+{
+  "version": "3.0",
+  "status": "PYQ-pattern starter database",
+  "note": "Original PYQ-pattern questions; not verbatim official PYQs.",
+  "questions": [
+    {
+      "id": "NEET-BIO-001",
+      "exam": "NEET",
+      "subject": "Biology",
+      "chapter": "Genetics",
+      "type": "Assertion–Reason",
+      "q": "Assertion: A test cross helps determine an unknown dominant phenotype genotype. Reason: The individual is crossed with a homozygous recessive partner.",
+      "options": [
+        "Both true; Reason explains Assertion",
+        "Both true; Reason does not explain Assertion",
+        "Assertion true; Reason false",
+        "Assertion false; Reason true"
+      ],
+      "answer": 0,
+      "solution": "A test cross uses a homozygous recessive partner so offspring reveal the unknown genotype."
+    },
+    {
+      "id": "NEET-PHY-001",
+      "exam": "NEET",
+      "subject": "Physics",
+      "chapter": "Current Electricity",
+      "type": "Numerical",
+      "q": "Two resistors 6 ohm and 3 ohm are connected in parallel across 12 V. Total current is:",
+      "options": [
+        "2 A",
+        "4 A",
+        "6 A",
+        "8 A"
+      ],
+      "answer": 2,
+      "solution": "Equivalent resistance is 2 ohm, so I=12/2=6 A."
+    },
+    {
+      "id": "NEET-CHEM-001",
+      "exam": "NEET",
+      "subject": "Chemistry",
+      "chapter": "Chemical Bonding",
+      "type": "Statement Based",
+      "q": "Which are correct? I. NH3 is pyramidal. II. BF3 is planar. III. CH4 is bent.",
+      "options": [
+        "I and II only",
+        "II and III only",
+        "I and III only",
+        "I, II and III"
+      ],
+      "answer": 0,
+      "solution": "NH3 is trigonal pyramidal, BF3 trigonal planar and CH4 tetrahedral."
+    },
+    {
+      "id": "JEE-PHY-001",
+      "exam": "JEE Main",
+      "subject": "Physics",
+      "chapter": "Kinematics",
+      "type": "Numerical",
+      "q": "A particle starts from rest with acceleration 2 m/s². Displacement in the fifth second is:",
+      "options": [
+        "7 m",
+        "8 m",
+        "9 m",
+        "10 m"
+      ],
+      "answer": 2,
+      "solution": "Distance in nth second = u + a(2n-1)/2 = 9 m."
+    },
+    {
+      "id": "JEE-CHEM-001",
+      "exam": "JEE Main",
+      "subject": "Chemistry",
+      "chapter": "Electrochemistry",
+      "type": "Numerical",
+      "q": "If E°cathode=1.20 V and E°anode=0.30 V as reduction potentials, E°cell is:",
+      "options": [
+        "0.90 V",
+        "1.50 V",
+        "-0.90 V",
+        "0.30 V"
+      ],
+      "answer": 0,
+      "solution": "E°cell=E°cathode-E°anode=0.90 V."
+    },
+    {
+      "id": "JEE-MATH-001",
+      "exam": "JEE Main",
+      "subject": "Mathematics",
+      "chapter": "Matrices",
+      "type": "Statement Based",
+      "q": "For square matrices A and B: I. det(AB)=det(A)det(B). II. det(A+B)=det(A)+det(B) always.",
+      "options": [
+        "I only",
+        "II only",
+        "Both",
+        "Neither"
+      ],
+      "answer": 0,
+      "solution": "Determinants are multiplicative, but determinant of a sum is not generally additive."
+    },
+    {
+      "exam": "NEET",
+      "year": null,
+      "set": null,
+      "subject": "Biology",
+      "chapter": "Human Physiology",
+      "type": "Statement",
+      "difficulty": "Moderate",
+      "q": "Consider the following statements about human circulation: (I) The pulmonary artery carries deoxygenated blood away from the heart. (II) The pulmonary vein carries oxygenated blood toward the heart. Which is correct?",
+      "options": [
+        "Both I and II are correct",
+        "Only I is correct",
+        "Only II is correct",
+        "Both are incorrect"
+      ],
+      "answer": 0,
+      "solution": "Both statements are correct: the pulmonary artery goes from the right ventricle to the lungs, while pulmonary veins return oxygenated blood to the left atrium."
+    },
+    {
+      "exam": "NEET",
+      "year": null,
+      "set": null,
+      "subject": "Biology",
+      "chapter": "Cell: The Unit of Life",
+      "type": "Assertion-Reason",
+      "difficulty": "Moderate",
+      "q": "Assertion: Ribosomes are called the protein factories of the cell. Reason: Ribosomes provide the site where amino acids are assembled into polypeptide chains.",
+      "options": [
+        "Both Assertion and Reason are true, and Reason correctly explains Assertion",
+        "Both are true, but Reason does not explain Assertion",
+        "Assertion is true, Reason is false",
+        "Assertion is false, Reason is true"
+      ],
+      "answer": 0,
+      "solution": "Both are true, and the reason directly explains why ribosomes are called protein factories."
+    },
+    {
+      "exam": "NEET",
+      "year": null,
+      "set": null,
+      "subject": "Chemistry",
+      "chapter": "Chemical Bonding",
+      "type": "Statement",
+      "difficulty": "Moderate",
+      "q": "Which statements are correct? (I) A sigma bond is formed by effective head-on overlap. (II) A pi bond is formed by lateral overlap of orbitals. (III) Free rotation around a double bond is generally restricted.",
+      "options": [
+        "I and II only",
+        "II and III only",
+        "I and III only",
+        "I, II and III"
+      ],
+      "answer": 3,
+      "solution": "All three statements are correct. Sigma bonds arise from head-on overlap; pi bonds from lateral overlap, and a double bond restricts rotation."
+    },
+    {
+      "exam": "NEET",
+      "year": null,
+      "set": null,
+      "subject": "Physics",
+      "chapter": "Current Electricity",
+      "type": "Numerical",
+      "difficulty": "Moderate",
+      "q": "A 6 ohm resistor is connected across a 12 V ideal battery. What current flows through the resistor?",
+      "options": [
+        "0.5 A",
+        "2 A",
+        "6 A",
+        "72 A"
+      ],
+      "answer": 1,
+      "solution": "Using Ohm's law, I = V/R = 12/6 = 2 A."
+    },
+    {
+      "exam": "NEET",
+      "year": null,
+      "set": null,
+      "subject": "Biology",
+      "chapter": "Genetics",
+      "type": "MCQ",
+      "difficulty": "Moderate",
+      "q": "In a monohybrid cross between two heterozygous individuals, what is the expected phenotypic ratio when complete dominance operates?",
+      "options": [
+        "1:1",
+        "1:2:1",
+        "3:1",
+        "9:3:3:1"
+      ],
+      "answer": 2,
+      "solution": "A cross Aa × Aa gives genotypes 1 AA : 2 Aa : 1 aa and, under complete dominance, phenotypes 3 dominant : 1 recessive."
+    },
+    {
+      "exam": "JEE Main",
+      "year": null,
+      "set": null,
+      "subject": "Physics",
+      "chapter": "Kinematics",
+      "type": "Statement",
+      "difficulty": "Moderate",
+      "q": "A particle moves with constant acceleration. Which statements are necessarily true? (I) Its velocity changes uniformly with time. (II) Its displacement-time graph must be a straight line. (III) Its velocity-time graph is a straight line.",
+      "options": [
+        "I only",
+        "I and III only",
+        "II and III only",
+        "I, II and III"
+      ],
+      "answer": 1,
+      "solution": "With constant acceleration, velocity varies linearly with time and the velocity-time graph is a straight line. Displacement varies quadratically in general."
+    },
+    {
+      "exam": "JEE Main",
+      "year": null,
+      "set": null,
+      "subject": "Chemistry",
+      "chapter": "Some Basic Concepts of Chemistry",
+      "type": "Numerical",
+      "difficulty": "Easy",
+      "q": "How many moles of water are present in 18 g of H2O?",
+      "options": [
+        "0.5 mol",
+        "1 mol",
+        "2 mol",
+        "18 mol"
+      ],
+      "answer": 1,
+      "solution": "Molar mass of H2O is 18 g mol−1, so 18 g corresponds to 1 mol."
+    },
+    {
+      "exam": "JEE Main",
+      "year": null,
+      "set": null,
+      "subject": "Mathematics",
+      "chapter": "Quadratic Equations",
+      "type": "MCQ",
+      "difficulty": "Easy",
+      "q": "If the roots of x² − 5x + 6 = 0 are α and β, what is α + β?",
+      "options": [
+        "2",
+        "3",
+        "5",
+        "6"
+      ],
+      "answer": 2,
+      "solution": "For ax²+bx+c=0, sum of roots is −b/a. Hence α+β=5."
+    }
+  ]
+}
