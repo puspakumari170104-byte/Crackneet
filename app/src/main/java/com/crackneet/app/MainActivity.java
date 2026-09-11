@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
     private TextView title, meta, question, progress, result, explanation;
     private RadioGroup options;
     private Button action;
-    private String exam = "";
+    private String exam = "";\n    private String subjectFilter = "All";\n    private String typeFilter = "All";
 
     static class Question {
         String exam, subject, chapter, type, text, solution;
