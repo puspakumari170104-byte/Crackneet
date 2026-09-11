@@ -13,7 +13,7 @@ import java.util.*;
 public class MainActivity extends Activity {
     private final ArrayList<Question> all = new ArrayList<>();
     private ArrayList<Question> current = new ArrayList<>();
-    private int index = 0, score = 0, answered = 0;
+    private int index = 0, score = 0, answered = 0;\n    private int attempted = 0;
     private TextView title, meta, question, progress, result, explanation;
     private RadioGroup options;
     private Button action;
@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
     private void start(String e) {
         exam=e; current=new ArrayList<>();
         for(Question q:all) if(q.exam.equals(e)) current.add(q);
-        Collections.shuffle(current); index=0; score=0; answered=0;
+        Collections.shuffle(current); index=0; score=0; answered=0; attempted=0;
         findViewById(R.id.secondary).setVisibility(View.GONE);
         action.setText("Next Question");
         action.setOnClickListener(v -> next());
@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
         if(options.getCheckedRadioButtonId()==-1){ Toast.makeText(this,"Please select an answer",Toast.LENGTH_SHORT).show(); return; }
         int chosen=options.indexOfChild(findViewById(options.getCheckedRadioButtonId()));
         Question q=current.get(index);
-        answered++; if(chosen==q.answer){score++; result.setText("✓ Correct");} else result.setText("✗ Incorrect • Correct answer: "+q.options[q.answer]);
+        answered++; attempted++; if(chosen==q.answer){score++; result.setText("✓ Correct");} else result.setText("✗ Incorrect • Correct answer: "+q.options[q.answer]);
         explanation.setText(q.solution);
         index++; render();
     }
@@ -123,7 +123,7 @@ public class MainActivity extends Activity {
         question.setText("Test completed");
         meta.setText(exam+" Practice");
         progress.setText("Score: "+score+" / "+answered+" correct • "+current.size()+" questions");
-        options.removeAllViews(); result.setText("Great job! Review the explanations and practice again.");
+        options.removeAllViews(); result.setText("Accuracy: "+(answered==0?0:(score*100/answered))+"%");\n        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\\n\\nTap Retry to practice again.");
         explanation.setText("");
         action.setText("Back to Home"); action.setOnClickListener(v -> showHome());
     }
