@@ -75,7 +75,7 @@ public class MainActivity extends Activity {
         final String[] labels={"30 minutes","60 minutes","90 minutes","3 hours (180 questions)"};
         final long[] times={30L*60*1000,60L*60*1000,90L*60*1000,3L*60*60*1000};
         new AlertDialog.Builder(this).setTitle("Choose test duration")
-            .setSingleChoiceItems(labels,0,(d,w)->{ testTimeMs=times[w]; d.dismiss(); chooseFilters(e); }).show();
+            .setSingleChoiceItems(labels,0,(d,w)->{ testTimeMs=times[w]; questionLimit=(w==3?180:0); d.dismiss(); chooseFilters(e); }).show();
     }
 
     private void chooseFilters(String e) {
@@ -104,14 +104,16 @@ public class MainActivity extends Activity {
     private void start(String e) {
         exam=e; current=new ArrayList<>(); startTime=System.currentTimeMillis();
         for(Question q:all) if(q.exam.equals(e)) current.add(q);
-        Collections.shuffle(current); index=0; score=0; answered=0; attempted=0; selectedAnswers.clear();
+        Collections.shuffle(current); if(questionLimit>0 && current.size()>questionLimit) current=new ArrayList<>(current.subList(0,questionLimit)); index=0; score=0; answered=0; attempted=0; selectedAnswers.clear();
         findViewById(R.id.secondary).setVisibility(View.GONE);
         action.setText("Next Question");
         action.setOnClickListener(v -> next());
         render();
     }
 
-    private void render() {\n        long remaining=Math.max(0,testTimeMs-(System.currentTimeMillis()-startTime));\n        timer.setText(String.format(Locale.US,"Time left: %02d:%02d:%02d",remaining/3600000,(remaining/60000)%60,(remaining/1000)%60));
+    private void render() {
+        long remaining=Math.max(0,testTimeMs-(System.currentTimeMillis()-startTime));
+        timer.setText(String.format(Locale.US,"Time left: %02d:%02d:%02d",remaining/3600000,(remaining/60000)%60,(remaining/1000)%60));
         if(System.currentTimeMillis()-startTime >= testTimeMs){ finishQuiz(); return; }
         if(index>=current.size()) { finishQuiz(); return; }
         Question q=current.get(index);
