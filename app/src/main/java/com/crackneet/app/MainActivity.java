@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
     private final ArrayList<Integer> selectedAnswers = new ArrayList<>();
     private int attempted = 0;
     private long startTime;
-    private static final long TEST_TIME_MS = 30 * 60 * 1000L;
+    private long testTimeMs = 30 * 60 * 1000L;\n    private int questionLimit = 0;
     private TextView title, meta, question, progress, result, explanation, timer;
     private RadioGroup options;
     private Button action;
@@ -28,11 +28,11 @@ public class MainActivity extends Activity {
     private String chapterFilter = "All";
 
     static class Question {
-        String exam, subject, chapter, type, text, solution;
+        String exam, subject, chapter, type, difficulty, text, solution;
         String[] options; int answer;
         Question(JSONObject o) throws Exception {
             exam=o.getString("exam"); subject=o.getString("subject"); chapter=o.getString("chapter");
-            type=o.getString("type"); text=o.getString("q"); solution=o.optString("solution","");
+            type=o.getString("type"); difficulty=o.optString("difficulty","Moderate"); text=o.getString("q"); solution=o.optString("solution","");
             JSONArray a=o.getJSONArray("options"); options=new String[a.length()];
             for(int i=0;i<a.length();i++) options[i]=a.getString(i);
             answer=o.getInt("answer");
@@ -103,7 +103,7 @@ public class MainActivity extends Activity {
 
     private void start(String e) {
         exam=e; current=new ArrayList<>(); startTime=System.currentTimeMillis();
-        for(Question q:all) if(q.exam.equals(e)) current.add(q);
+        for(Question q:all) if(q.exam.equals(e) && (subjectFilter.equals("All") || q.subject.equals(subjectFilter)) && (chapterFilter.equals("All") || q.chapter.equals(chapterFilter)) && (typeFilter.equals("All") || q.type.equals(typeFilter)) && (difficultyFilter.equals("All") || q.difficulty.equals(difficultyFilter))) current.add(q);
         Collections.shuffle(current); if(questionLimit>0 && current.size()>questionLimit) current=new ArrayList<>(current.subList(0,questionLimit)); index=0; score=0; answered=0; attempted=0; selectedAnswers.clear();
         findViewById(R.id.secondary).setVisibility(View.GONE);
         action.setText("Next Question");
@@ -140,12 +140,12 @@ public class MainActivity extends Activity {
         StringBuilder sb=new StringBuilder();
         for(int i=0;i<current.size();i++){
             Question q=current.get(i);
-            String ans=(i<selectedAnswers.size())?q.options[selectedAnswers.get(i)]:"Not attempted";
+            String ans=(i<selectedAnswers.size()) ? q.options[selectedAnswers.get(i)] : "Not attempted";
             String correct=q.options[q.answer];
-            sb.append("Q").append(i+1).append(": ").append(q.text).append("\\n")
-              .append("Your answer: ").append(ans).append("\\n")
-              .append("Correct: ").append(correct).append("\\n")
-              .append(q.solution).append("\\n\\n");
+            sb.append("Q").append(i+1).append(": ").append(q.text).append("\n");
+            sb.append("Your answer: ").append(ans).append("\n");
+            sb.append("Correct: ").append(correct).append("\n");
+            sb.append(q.solution).append("\n\n");
         }
         explanation.setText(sb.toString());
         action.setText("Back to Result");
@@ -156,9 +156,14 @@ public class MainActivity extends Activity {
         question.setText("Test completed");
         meta.setText(exam+" Practice");
         progress.setText("Score: "+score+" / "+answered+" correct • "+current.size()+" questions");
-        options.removeAllViews(); result.setText("Accuracy: "+(answered==0?0:(score*100/answered))+"%");
-        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\\n\\nTap Retry to practice again.");
-        Button review=new Button(this); review.setText("Review Answers"); review.setOnClickListener(v -> showReview()); ((LinearLayout)action.getParent()).addView(review);
-        action.setText("Back to Home"); action.setOnClickListener(v -> showHome());
+        options.removeAllViews();
+        result.setText("Accuracy: "+(answered==0?0:(score*100/answered))+"%");
+        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\n\nTap Retry to practice again.");
+        Button review=new Button(this);
+        review.setText("Review Answers");
+        review.setOnClickListener(v -> showReview());
+        ((LinearLayout)action.getParent()).addView(review);
+        action.setText("Back to Home");
+        action.setOnClickListener(v -> showHome());
     }
 }
