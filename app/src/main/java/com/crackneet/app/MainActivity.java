@@ -15,7 +15,9 @@ public class MainActivity extends Activity {
     private ArrayList<Question> current = new ArrayList<>();
     private int index = 0, score = 0, answered = 0;
     private final ArrayList<Integer> selectedAnswers = new ArrayList<>();
-    private int attempted = 0;\n    private long startTime;\n    private static final long TEST_TIME_MS = 30 * 60 * 1000L;
+    private int attempted = 0;
+    private long startTime;
+    private static final long TEST_TIME_MS = 30 * 60 * 1000L;
     private TextView title, meta, question, progress, result, explanation;
     private RadioGroup options;
     private Button action;
@@ -63,10 +65,17 @@ public class MainActivity extends Activity {
         progress.setText(all.size()+" questions available");
         options.removeAllViews(); result.setText(""); explanation.setText("");
         action.setText("NEET Practice");
-        action.setOnClickListener(v -> chooseFilters("NEET"));
+        action.setOnClickListener(v -> chooseTime("NEET"));
         Button jee=findViewById(R.id.secondary);
         jee.setVisibility(View.VISIBLE); jee.setText("JEE Main Practice");
-        jee.setOnClickListener(v -> chooseFilters("JEE Main"));
+        jee.setOnClickListener(v -> chooseTime("JEE Main"));
+    }
+
+    private void chooseTime(String e) {
+        final String[] labels={"30 minutes","60 minutes","90 minutes","3 hours (180 questions)"};
+        final long[] times={30L*60*1000,60L*60*1000,90L*60*1000,3L*60*60*1000};
+        new AlertDialog.Builder(this).setTitle("Choose test duration")
+            .setSingleChoiceItems(labels,0,(d,w)->{ testTimeMs=times[w]; d.dismiss(); chooseFilters(e); }).show();
     }
 
     private void chooseFilters(String e) {
@@ -102,7 +111,8 @@ public class MainActivity extends Activity {
         render();
     }
 
-    private void render() {\n        if(System.currentTimeMillis()-startTime >= TEST_TIME_MS){ finishQuiz(); return; }
+    private void render() {
+        if(System.currentTimeMillis()-startTime >= testTimeMs){ finishQuiz(); return; }
         if(index>=current.size()) { finishQuiz(); return; }
         Question q=current.get(index);
         meta.setText(q.exam+" • "+q.subject+" • "+q.chapter+" • "+q.type);
