@@ -3,11 +3,12 @@
 <LinearLayout android:orientation="vertical" android:padding="20dp" android:layout_width="match_parent" android:layout_height="wrap_content">
 <TextView android:id="@+id/title" android:text="CrackNEET" android:textSize="30sp" android:textStyle="bold" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 <TextView android:id="@+id/meta" android:textSize="14sp" android:layout_marginTop="6dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<TextView android:id="@+id/progress" android:textSize="14sp" android:layout_marginTop="14dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+<TextView android:id="@+id/timer" android:text="Time left: 00:30:00" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>\n<TextView android:id="@+id/progress" android:textSize="14sp" android:layout_marginTop="14dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 <TextView android:id="@+id/question" android:textSize="20sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 <RadioGroup android:id="@+id/options" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp"/>
 <TextView android:id="@+id/result" android:textSize="17sp" android:textStyle="bold" android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 <TextView android:id="@+id/explanation" android:textSize="15sp" android:layout_marginTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<TextView android:id="@+id/filterInfo" android:text="All subjects • All types" android:layout_marginTop="14dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>\n<Button android:id="@+id/action" android:text="NEET Practice" android:layout_marginTop="20dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+<TextView android:id="@+id/filterInfo" android:text="All subjects • All types" android:layout_marginTop="14dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+<Button android:id="@+id/action" android:text="NEET Practice" android:layout_marginTop="20dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 <Button android:id="@+id/secondary" android:text="JEE Main Practice" android:layout_marginTop="10dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 </LinearLayout></ScrollView>
