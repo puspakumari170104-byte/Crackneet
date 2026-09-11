@@ -21,6 +21,7 @@ public class MainActivity extends Activity {
     private String subjectFilter = "All";
     private String typeFilter = "All";
     private String difficultyFilter = "All";
+    private String chapterFilter = "All";
 
     static class Question {
         String exam, subject, chapter, type, text, solution;
@@ -70,15 +71,21 @@ public class MainActivity extends Activity {
         exam=e;
         final String[] subjects = {"All","Physics","Chemistry","Biology","Mathematics"};
         new AlertDialog.Builder(this).setTitle("Choose subject")
-            .setSingleChoiceItems(subjects, 0, (d, which) -> {
-                subjectFilter=subjects[which]; d.dismiss();
-                final String[] types={"All","MCQ","Statement","Assertion-Reason","Numerical"};
-                new AlertDialog.Builder(this).setTitle("Question type")
-                    .setSingleChoiceItems(types,0,(d2,w)->{
-                        typeFilter=types[w]; d2.dismiss();
-                        final String[] levels={"All","Easy","Moderate","Hard"};
-                        new AlertDialog.Builder(this).setTitle("Difficulty")
-                            .setSingleChoiceItems(levels,0,(d3,x)->{ difficultyFilter=levels[x]; d3.dismiss(); start(exam); }).show();
+            .setSingleChoiceItems(subjects,0,(d,w)->{
+                subjectFilter=subjects[w]; d.dismiss();
+                ArrayList<String> chapters=new ArrayList<>(); chapters.add("All");
+                for(Question q:all) if(q.exam.equals(e) && (subjectFilter.equals("All") || q.subject.equals(subjectFilter)) && !chapters.contains(q.chapter)) chapters.add(q.chapter);
+                new AlertDialog.Builder(this).setTitle("Choose chapter")
+                    .setSingleChoiceItems(chapters.toArray(new String[0]),0,(d2,x)->{
+                        chapterFilter=chapters.get(x); d2.dismiss();
+                        final String[] types={"All","MCQ","Statement","Assertion-Reason","Numerical"};
+                        new AlertDialog.Builder(this).setTitle("Question type")
+                            .setSingleChoiceItems(types,0,(d3,y)->{
+                                typeFilter=types[y]; d3.dismiss();
+                                final String[] levels={"All","Easy","Moderate","Hard"};
+                                new AlertDialog.Builder(this).setTitle("Difficulty")
+                                    .setSingleChoiceItems(levels,0,(d4,z)->{ difficultyFilter=levels[z]; d4.dismiss(); start(exam); }).show();
+                            }).show();
                     }).show();
             }).show();
     }
