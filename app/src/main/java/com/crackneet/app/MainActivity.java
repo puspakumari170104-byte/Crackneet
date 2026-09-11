@@ -13,8 +13,9 @@ import java.util.*;
 public class MainActivity extends Activity {
     private final ArrayList<Question> all = new ArrayList<>();
     private ArrayList<Question> current = new ArrayList<>();
-    private int index = 0, score = 0, answered = 0;\n    private final ArrayList<Integer> selectedAnswers = new ArrayList<>();
-    private int attempted = 0;
+    private int index = 0, score = 0, answered = 0;
+    private final ArrayList<Integer> selectedAnswers = new ArrayList<>();
+    private int attempted = 0;\n    private long startTime;\n    private static final long TEST_TIME_MS = 30 * 60 * 1000L;
     private TextView title, meta, question, progress, result, explanation;
     private RadioGroup options;
     private Button action;
@@ -92,7 +93,7 @@ public class MainActivity extends Activity {
     }
 
     private void start(String e) {
-        exam=e; current=new ArrayList<>();
+        exam=e; current=new ArrayList<>(); startTime=System.currentTimeMillis();
         for(Question q:all) if(q.exam.equals(e)) current.add(q);
         Collections.shuffle(current); index=0; score=0; answered=0; attempted=0; selectedAnswers.clear();
         findViewById(R.id.secondary).setVisibility(View.GONE);
@@ -101,7 +102,7 @@ public class MainActivity extends Activity {
         render();
     }
 
-    private void render() {
+    private void render() {\n        if(System.currentTimeMillis()-startTime >= TEST_TIME_MS){ finishQuiz(); return; }
         if(index>=current.size()) { finishQuiz(); return; }
         Question q=current.get(index);
         meta.setText(q.exam+" • "+q.subject+" • "+q.chapter+" • "+q.type);
@@ -129,10 +130,15 @@ public class MainActivity extends Activity {
             Question q=current.get(i);
             String ans=(i<selectedAnswers.size())?q.options[selectedAnswers.get(i)]:"Not attempted";
             String correct=q.options[q.answer];
-            sb.append("Q").append(i+1).append(": ").append(q.text).append("\\n")
-              .append("Your answer: ").append(ans).append("\\n")
-              .append("Correct: ").append(correct).append("\\n")
-              .append(q.solution).append("\\n\\n");
+            sb.append("Q").append(i+1).append(": ").append(q.text).append("\
+")
+              .append("Your answer: ").append(ans).append("\
+")
+              .append("Correct: ").append(correct).append("\
+")
+              .append(q.solution).append("\
+\
+");
         }
         explanation.setText(sb.toString());
         action.setText("Back to Result");
@@ -148,6 +154,7 @@ public class MainActivity extends Activity {
 \
 Tap Retry to practice again.");
         explanation.setText("");
-        Button review=new Button(this); review.setText("Review Answers"); review.setOnClickListener(v -> showReview()); ((LinearLayout)action.getParent()).addView(review);\n        action.setText("Back to Home"); action.setOnClickListener(v -> showHome());
+        Button review=new Button(this); review.setText("Review Answers"); review.setOnClickListener(v -> showReview()); ((LinearLayout)action.getParent()).addView(review);
+        action.setText("Back to Home"); action.setOnClickListener(v -> showHome());
     }
 }
