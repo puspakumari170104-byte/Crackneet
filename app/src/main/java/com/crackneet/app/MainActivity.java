@@ -18,7 +18,7 @@ public class MainActivity extends Activity {
     private int attempted = 0;
     private long startTime;
     private static final long TEST_TIME_MS = 30 * 60 * 1000L;
-    private TextView title, meta, question, progress, result, explanation;
+    private TextView title, meta, question, progress, result, explanation, timer;
     private RadioGroup options;
     private Button action;
     private String exam = "";
@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         title=findViewById(R.id.title); meta=findViewById(R.id.meta); question=findViewById(R.id.question);
         progress=findViewById(R.id.progress); result=findViewById(R.id.result);
-        explanation=findViewById(R.id.explanation); options=findViewById(R.id.options); action=findViewById(R.id.action);
+        explanation=findViewById(R.id.explanation); options=findViewById(R.id.options); action=findViewById(R.id.action); timer=findViewById(R.id.timer);
         loadQuestions();
         showHome();
     }
@@ -111,7 +111,7 @@ public class MainActivity extends Activity {
         render();
     }
 
-    private void render() {
+    private void render() {\n        long remaining=Math.max(0,testTimeMs-(System.currentTimeMillis()-startTime));\n        timer.setText(String.format(Locale.US,"Time left: %02d:%02d:%02d",remaining/3600000,(remaining/60000)%60,(remaining/1000)%60));
         if(System.currentTimeMillis()-startTime >= testTimeMs){ finishQuiz(); return; }
         if(index>=current.size()) { finishQuiz(); return; }
         Question q=current.get(index);
