@@ -142,15 +142,10 @@ public class MainActivity extends Activity {
             Question q=current.get(i);
             String ans=(i<selectedAnswers.size())?q.options[selectedAnswers.get(i)]:"Not attempted";
             String correct=q.options[q.answer];
-            sb.append("Q").append(i+1).append(": ").append(q.text).append("\
-")
-              .append("Your answer: ").append(ans).append("\
-")
-              .append("Correct: ").append(correct).append("\
-")
-              .append(q.solution).append("\
-\
-");
+            sb.append("Q").append(i+1).append(": ").append(q.text).append("\\n")
+              .append("Your answer: ").append(ans).append("\\n")
+              .append("Correct: ").append(correct).append("\\n")
+              .append(q.solution).append("\\n\\n");
         }
         explanation.setText(sb.toString());
         action.setText("Back to Result");
@@ -162,10 +157,7 @@ public class MainActivity extends Activity {
         meta.setText(exam+" Practice");
         progress.setText("Score: "+score+" / "+answered+" correct • "+current.size()+" questions");
         options.removeAllViews(); result.setText("Accuracy: "+(answered==0?0:(score*100/answered))+"%");
-        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\
-\
-Tap Retry to practice again.");
-        explanation.setText("");
+        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\\n\\nTap Retry to practice again.");
         Button review=new Button(this); review.setText("Review Answers"); review.setOnClickListener(v -> showReview()); ((LinearLayout)action.getParent()).addView(review);
         action.setText("Back to Home"); action.setOnClickListener(v -> showHome());
     }
