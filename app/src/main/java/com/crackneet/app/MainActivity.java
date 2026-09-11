@@ -13,7 +13,8 @@ import java.util.*;
 public class MainActivity extends Activity {
     private final ArrayList<Question> all = new ArrayList<>();
     private ArrayList<Question> current = new ArrayList<>();
-    private int index = 0, score = 0, answered = 0;\n    private int attempted = 0;
+    private int index = 0, score = 0, answered = 0;\n    private final ArrayList<Integer> selectedAnswers = new ArrayList<>();
+    private int attempted = 0;
     private TextView title, meta, question, progress, result, explanation;
     private RadioGroup options;
     private Button action;
@@ -93,7 +94,7 @@ public class MainActivity extends Activity {
     private void start(String e) {
         exam=e; current=new ArrayList<>();
         for(Question q:all) if(q.exam.equals(e)) current.add(q);
-        Collections.shuffle(current); index=0; score=0; answered=0; attempted=0;
+        Collections.shuffle(current); index=0; score=0; answered=0; attempted=0; selectedAnswers.clear();
         findViewById(R.id.secondary).setVisibility(View.GONE);
         action.setText("Next Question");
         action.setOnClickListener(v -> next());
@@ -114,17 +115,39 @@ public class MainActivity extends Activity {
         if(options.getCheckedRadioButtonId()==-1){ Toast.makeText(this,"Please select an answer",Toast.LENGTH_SHORT).show(); return; }
         int chosen=options.indexOfChild(findViewById(options.getCheckedRadioButtonId()));
         Question q=current.get(index);
-        answered++; attempted++; if(chosen==q.answer){score++; result.setText("✓ Correct");} else result.setText("✗ Incorrect • Correct answer: "+q.options[q.answer]);
+        answered++; attempted++; selectedAnswers.add(chosen); if(chosen==q.answer){score++; result.setText("✓ Correct");} else result.setText("✗ Incorrect • Correct answer: "+q.options[q.answer]);
         explanation.setText(q.solution);
         index++; render();
+    }
+
+    private void showReview() {
+        question.setText("Answer Review");
+        meta.setText(exam+" • "+current.size()+" questions");
+        options.removeAllViews(); result.setText("");
+        StringBuilder sb=new StringBuilder();
+        for(int i=0;i<current.size();i++){
+            Question q=current.get(i);
+            String ans=(i<selectedAnswers.size())?q.options[selectedAnswers.get(i)]:"Not attempted";
+            String correct=q.options[q.answer];
+            sb.append("Q").append(i+1).append(": ").append(q.text).append("\\n")
+              .append("Your answer: ").append(ans).append("\\n")
+              .append("Correct: ").append(correct).append("\\n")
+              .append(q.solution).append("\\n\\n");
+        }
+        explanation.setText(sb.toString());
+        action.setText("Back to Result");
+        action.setOnClickListener(v -> finishQuiz());
     }
 
     private void finishQuiz() {
         question.setText("Test completed");
         meta.setText(exam+" Practice");
         progress.setText("Score: "+score+" / "+answered+" correct • "+current.size()+" questions");
-        options.removeAllViews(); result.setText("Accuracy: "+(answered==0?0:(score*100/answered))+"%");\n        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\\n\\nTap Retry to practice again.");
+        options.removeAllViews(); result.setText("Accuracy: "+(answered==0?0:(score*100/answered))+"%");
+        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\
+\
+Tap Retry to practice again.");
         explanation.setText("");
-        action.setText("Back to Home"); action.setOnClickListener(v -> showHome());
+        Button review=new Button(this); review.setText("Review Answers"); review.setOnClickListener(v -> showReview()); ((LinearLayout)action.getParent()).addView(review);\n        action.setText("Back to Home"); action.setOnClickListener(v -> showHome());
     }
 }
