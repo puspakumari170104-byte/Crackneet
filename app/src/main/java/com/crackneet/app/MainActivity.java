@@ -20,6 +20,7 @@ public class MainActivity extends Activity {
     private String exam = "";
     private String subjectFilter = "All";
     private String typeFilter = "All";
+    private String difficultyFilter = "All";
 
     static class Question {
         String exam, subject, chapter, type, text, solution;
