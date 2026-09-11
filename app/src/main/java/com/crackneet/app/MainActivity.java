@@ -60,10 +60,27 @@ public class MainActivity extends Activity {
         progress.setText(all.size()+" questions available");
         options.removeAllViews(); result.setText(""); explanation.setText("");
         action.setText("NEET Practice");
-        action.setOnClickListener(v -> start("NEET"));
+        action.setOnClickListener(v -> chooseFilters("NEET"));
         Button jee=findViewById(R.id.secondary);
         jee.setVisibility(View.VISIBLE); jee.setText("JEE Main Practice");
-        jee.setOnClickListener(v -> start("JEE Main"));
+        jee.setOnClickListener(v -> chooseFilters("JEE Main"));
+    }
+
+    private void chooseFilters(String e) {
+        exam=e;
+        final String[] subjects = {"All","Physics","Chemistry","Biology","Mathematics"};
+        new AlertDialog.Builder(this).setTitle("Choose subject")
+            .setSingleChoiceItems(subjects, 0, (d, which) -> {
+                subjectFilter=subjects[which]; d.dismiss();
+                final String[] types={"All","MCQ","Statement","Assertion-Reason","Numerical"};
+                new AlertDialog.Builder(this).setTitle("Question type")
+                    .setSingleChoiceItems(types,0,(d2,w)->{
+                        typeFilter=types[w]; d2.dismiss();
+                        final String[] levels={"All","Easy","Moderate","Hard"};
+                        new AlertDialog.Builder(this).setTitle("Difficulty")
+                            .setSingleChoiceItems(levels,0,(d3,x)->{ difficultyFilter=levels[x]; d3.dismiss(); start(exam); }).show();
+                    }).show();
+            }).show();
     }
 
     private void start(String e) {
