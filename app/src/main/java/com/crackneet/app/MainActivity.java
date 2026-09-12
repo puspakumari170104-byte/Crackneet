@@ -207,8 +207,49 @@ public class MainActivity extends Activity {
     @Override public void onBackPressed(){showDashboard();}
 
     static class QuestionBank{
-        static ArrayList<Question> generate40000(){ArrayList<Question>a=new ArrayList<Question>(40000);for(int i=0;i<40000;i++)a.add(make(i));return a;}
-        static Question make(int i){boolean neet=i<20000;String e=neet?"NEET":"JEE Main";int n=i+1;String id=(neet?"N":"J")+String.format(Locale.US,"%05d",n);String sub;if(neet)sub=new String[]{"Biology","Physics","Chemistry"}[i%3];else sub=new String[]{"Mathematics","Physics","Chemistry"}[i%3];String ch=sub.equals("Biology")?"Genetics":sub.equals("Physics")?"Current Electricity":sub.equals("Chemistry")?"Chemical Bonding":sub.equals("Mathematics")?"Quadratic Equations":"Physics";String[] types={"PYQ Based","Mixed","Assertion-Reason","Statement Based","Match the Column","MCQ","Numerical"};String type=types[i%types.length];int v=i%20+2;
-            String q="Practice question "+n+": In "+ch+", which statement is most appropriate for exam preparation?";String a="Option A is correct",b="Option B",c="Option C",d="Option D";if(i%5==0){q="A "+v+" ohm resistor is connected to "+(2*v)+" V. The current is:";a="2 A";b="1 A";c="4 A";d="0.5 A";ch="Current Electricity";sub="Physics";}else if(i%5==1){q="In a Tt × Tt cross, probability of tt is:";a="1/4";b="1/2";c="3/4";d="1";ch="Genetics";sub="Biology";}else if(i%5==2){q="BF3 has which molecular geometry?";a="Trigonal planar";b="Tetrahedral";c="Linear";d="Bent";ch="Chemical Bonding";sub="Chemistry";}else if(i%5==3){q="The sum of roots of x² - "+(v+5)+"x + "+(v*2)+" = 0 is:";a=""+(v+5);b=""+v;c=""+(v+2);d=""+(v*2);ch="Quadratic Equations";sub="Mathematics";}return new Question(id,e,sub,ch,type,i%3==0?"Easy":"Moderate",q,new String[]{a,b,c,d},0,"Correct answer: Option A. Review the chapter concept and practice related PYQ-based questions.");}
-    }
-}
+        static ArrayList<Question> generate40000(){
+            ArrayList<Question> a=new ArrayList<Question>(40000);
+            for(int i=0;i<40000;i++) a.add(make(i));
+            return a;
+        }
+        static Question make(int i){
+            boolean neet=i<20000; String exam=neet?"NEET":"JEE Main";
+            String subject;
+            if(neet) subject=new String[]{"Biology","Physics","Chemistry"}[i%3];
+            else subject=new String[]{"Physics","Chemistry","Mathematics"}[i%3];
+            String chapter;
+            if(subject.equals("Biology")) chapter=new String[]{"Cell: The Unit of Life","Genetics","Human Physiology","Plant Physiology","Ecology"}[i%5];
+            else if(subject.equals("Physics")) chapter=new String[]{"Kinematics","Current Electricity","Electrostatics","Ray Optics","Modern Physics"}[i%5];
+            else if(subject.equals("Chemistry")) chapter=new String[]{"Chemical Bonding","Electrochemistry","Thermodynamics","Organic Chemistry","Coordination Compounds"}[i%5];
+            else chapter=new String[]{"Quadratic Equations","Matrices","Calculus","Coordinate Geometry","Probability"}[i%5];
+            String[] types={"MCQ","PYQ Based","Assertion-Reason","Statement Based","Match the Column","Numerical"};
+            String type=types[i%types.length]; int n=i+1, v=i%20+2;
+            String q,op1,op2,op3,op4,sol;
+            if(subject.equals("Physics")){
+                q="A "+v+" ohm resistor is connected across "+(2*v)+" V. The current is:";
+                op1="2 A";op2="1 A";op3="4 A";op4="0.5 A";sol="Ohm's law: I = V/R = "+(2*v)+"/"+v+" = 2 A.";
+            } else if(subject.equals("Biology")){
+                q="In a Tt × Tt cross, the probability of obtaining tt is:";
+                op1="1/4";op2="1/2";op3="3/4";op4="1";sol="The genotype ratio is 1 TT : 2 Tt : 1 tt, so tt occurs with probability 1/4.";
+            } else if(subject.equals("Chemistry")){
+                q="Which molecular geometry is associated with BF3?";
+                op1="Trigonal planar";op2="Tetrahedral";op3="Linear";op4="Bent";sol="BF3 has three bonding pairs around boron and no lone pair on boron, giving trigonal planar geometry.";
+            } else {
+                q="The sum of roots of x² - "+(v+5)+"x + "+(v*2)+" = 0 is:";
+                op1=""+(v+5);op2=""+v;op3=""+(v+2);op4=""+(v*2);sol="For ax²+bx+c=0, sum of roots = -b/a, hence "+(v+5)+".";
+            }
+            if(type.equals("Assertion-Reason")){
+                q="Assertion: "+chapter+" concepts are important for competitive exams. Reason: Conceptual practice improves accuracy.";
+                op1="Both true; Reason explains Assertion";op2="Both true; Reason does not explain Assertion";op3="Assertion true; Reason false";op4="Assertion false; Reason true";
+                sol="Both statements are framed as true, and the reason directly supports the assertion.";
+            } else if(type.equals("Statement Based")){
+                q="Consider: I. "+chapter+" requires concept-based revision. II. Regular practice can improve accuracy. Which is correct?";
+                op1="Both I and II";op2="I only";op3="II only";op4="Neither";sol="Both statements are correct as study principles for this chapter.";
+            } else if(type.equals("Match the Column")){
+                q="Match the concept with its most appropriate study action: Concept—"+chapter+".";
+                op1="Learn concept → Solve mixed questions";op2="Skip theory → Guess answers";op3="Memorise options only";op4="Avoid revision";sol="Concept learning followed by mixed practice is the appropriate preparation strategy.";
+            }
+            String id=(neet?"NEET":"JEE")+"-"+String.format(Locale.US,"%05d",n);
+            return new Question(id,exam,subject,chapter,type,i%3==0?"Easy":i%3==1?"Moderate":"Hard",q,new String[]{op1,op2,op3,op4},0,sol);
+        }
+    }}
