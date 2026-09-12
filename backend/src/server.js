@@ -10,6 +10,11 @@ app.use(helmet());
 app.use(cors({origin:process.env.CORS_ORIGIN||"*"}));
 app.use(express.json({limit:"2mb"}));
 const pool=new Pool({connectionString:process.env.DATABASE_URL});
+async function ensureSessionTable(){
+ await pool.query("CREATE TABLE IF NOT EXISTS sessions(id BIGSERIAL PRIMARY KEY,user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,token_hash TEXT UNIQUE NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),expires_at TIMESTAMPTZ NOT NULL)");
+ await pool.query("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token_hash)");
+}
+
 
 app.get("/api/health",async(req,res)=>{try{await pool.query("SELECT 1");res.json({ok:true,service:"crackneet-api",database:"connected"});}catch(e){res.status(503).json({ok:false,database:"unavailable"});}});
 
@@ -54,7 +59,7 @@ app.post("/api/auth/login",async(req,res)=>{
 });
 
 app.delete("/api/auth/account",auth,async(req,res)=>{
- try{await pool.query("DELETE FROM users WHERE id=$1",[req.user.id]);res.json({ok:true});}
+ try{await pool.query("BEGIN");await pool.query("DELETE FROM test_attempts WHERE user_id=$1",[req.user.id]);await pool.query("DELETE FROM sessions WHERE user_id=$1",[req.user.id]);await pool.query("DELETE FROM users WHERE id=$1",[req.user.id]);await pool.query("COMMIT");res.json({ok:true});}catch(e){await pool.query("ROLLBACK");res.status(500).json({error:"account_deletion_failed"});}
  catch(e){res.status(500).json({error:"account_deletion_failed"});}
 });
 
@@ -67,4 +72,5 @@ app.post("/api/tests/submit",auth,async(req,res)=>{
 
 app.get("/api/users/me/progress",auth,async(req,res)=>{try{const {rows}=await pool.query("SELECT COUNT(*) attempts,COALESCE(SUM(correct),0) correct,COALESCE(SUM(wrong),0) wrong,COALESCE(SUM(skipped),0) skipped,COALESCE(AVG(CASE WHEN total>0 THEN score::numeric*100/total END),0) accuracy FROM test_attempts WHERE user_id=$1",[req.user.id]);res.json({user:req.user,progress:rows[0]});}catch(e){res.status(500).json({error:"progress_failed"});}});
 
-app.listen(process.env.PORT||8080,()=>console.log("CrackNEET API listening on "+(process.env.PORT||8080)));
+const PORT=process.env.PORT||8080;
+ensureSessionTable().then(()=>app.listen(PORT,()=>console.log("CrackNEET API listening on "+PORT))).catch(e=>{console.error("Database initialization failed",e);process.exit(1);});
