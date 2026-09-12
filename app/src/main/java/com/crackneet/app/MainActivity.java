@@ -26,13 +26,13 @@ public class MainActivity extends Activity {
     }
     int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
     TextView tv(String s,float z,int c,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(z);t.setTextColor(c);t.setTypeface(null,bold?1:0);t.setPadding(0,dp(5),0,dp(5));return t;}
-    GradientDrawable bg(int c,float r){GradientDrawable g=new GradientDrawable();g.setColor(c);g.setCornerRadius(dp((int)r));return g;}
+    GradientDrawable bg(int c,float r){GradientDrawable g=new GradientDrawable();g.setColor(c);g.setCornerRadius(dp((int)r));return g;}\n    void lift(View v,float z){v.setElevation(dp((int)z));}
     LinearLayout box(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);l.setPadding(dp(16),dp(12),dp(16),dp(12));return l;}
     Button btn(String s){Button b=new Button(this);b.setText(s);b.setTextSize(14);b.setTextColor(Color.WHITE);b.setAllCaps(false);b.setTypeface(null,1);b.setBackground(bg(GREEN,14));return b;}
 
     void showSplash(){
-        root.removeAllViews(); LinearLayout l=box(); l.setGravity(Gravity.CENTER); l.setBackgroundColor(DARK);
-        TextView cap=tv("🎓",62,Color.WHITE,true);cap.setGravity(Gravity.CENTER);l.addView(cap,new LinearLayout.LayoutParams(-1,dp(82)));
+        root.removeAllViews(); LinearLayout l=box(); l.setGravity(Gravity.CENTER); l.setBackgroundResource(R.drawable.hero_gradient);
+        ImageView cap=new ImageView(this);cap.setImageResource(R.drawable.ic_crackneet);cap.setScaleType(ImageView.ScaleType.CENTER_INSIDE);l.addView(cap,new LinearLayout.LayoutParams(-1,dp(92)));
         TextView a=tv("Crack",34,Color.WHITE,true);a.setGravity(Gravity.CENTER);TextView n=tv("NEET",34,GREEN,true);n.setGravity(Gravity.CENTER);
         LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER);brand.addView(a);brand.addView(n);l.addView(brand,new LinearLayout.LayoutParams(-1,dp(60)));
         TextView sub=tv("Your NEET + JEE Preparation Companion",14,Color.rgb(200,220,220),false);sub.setGravity(Gravity.CENTER);l.addView(sub);
@@ -40,8 +40,8 @@ public class MainActivity extends Activity {
         root.addView(l); new Handler().postDelayed(new Runnable(){public void run(){showWelcome();}},1200);
     }
     void showWelcome(){
-        root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER_HORIZONTAL);l.setPadding(dp(26),dp(34),dp(26),dp(22));l.setBackgroundColor(BG);
-        TextView cap=tv("🎓",48,GREEN,true);cap.setGravity(Gravity.CENTER);l.addView(cap,new LinearLayout.LayoutParams(-1,dp(65)));
+        root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER_HORIZONTAL);l.setPadding(dp(26),dp(28),dp(26),dp(22));l.setBackgroundResource(R.drawable.app_background);
+        ImageView cap=new ImageView(this);cap.setImageResource(R.drawable.ic_crackneet);cap.setScaleType(ImageView.ScaleType.CENTER_INSIDE);l.addView(cap,new LinearLayout.LayoutParams(-1,dp(72)));
         LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER);TextView cr=tv("Crack",31,DARK,true);TextView ne=tv("NEET",31,GREEN,true);brand.addView(cr);brand.addView(ne);l.addView(brand);
         TextView welcome=tv("Welcome Back!",22,TEXT,true);welcome.setGravity(Gravity.CENTER);l.addView(welcome,new LinearLayout.LayoutParams(-1,dp(55)));
         TextView info=tv("Your NEET journey continues here.",14,MUTED,false);info.setGravity(Gravity.CENTER);l.addView(info);
@@ -57,8 +57,8 @@ public class MainActivity extends Activity {
         root.addView(l);
     }
     void base(String title,boolean back){
-        root.removeAllViews();LinearLayout frame=new LinearLayout(this);frame.setOrientation(LinearLayout.VERTICAL);frame.setBackgroundColor(BG);
-        LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);
+        root.removeAllViews();LinearLayout frame=new LinearLayout(this);frame.setOrientation(LinearLayout.VERTICAL);frame.setBackgroundResource(R.drawable.app_background);
+        LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(dp(4),dp(4),dp(4),0);
         if(back){Button b=btn("‹");b.setTextColor(DARK);b.setBackgroundColor(Color.TRANSPARENT);b.setOnClickListener(v->showDashboard());top.addView(b,new LinearLayout.LayoutParams(dp(48),dp(52)));}
         TextView h=tv(title,21,DARK,true);top.addView(h,new LinearLayout.LayoutParams(0,dp(52),1));
         Button m=btn("☰");m.setTextColor(DARK);m.setBackgroundColor(Color.TRANSPARENT);m.setOnClickListener(v->showDrawer());top.addView(m,new LinearLayout.LayoutParams(dp(52),dp(52)));
@@ -66,21 +66,21 @@ public class MainActivity extends Activity {
         addBottom(frame);root.addView(frame);
     }
     void addBottom(LinearLayout frame){
-        LinearLayout nav=new LinearLayout(this);nav.setGravity(Gravity.CENTER);nav.setPadding(dp(4),dp(4),dp(4),dp(5));nav.setBackgroundColor(Color.WHITE);
+        LinearLayout nav=new LinearLayout(this);nav.setGravity(Gravity.CENTER);nav.setPadding(dp(4),dp(4),dp(4),dp(5));nav.setBackgroundColor(Color.WHITE);lift(nav,10);
         String[] names={"⌂\nHome","▣\nTests","▤\nNotes","⌁\nProgress","♙\nProfile"};
         for(final String n:names){TextView b=tv(n,11,n.startsWith("⌂")?GREEN:MUTED,n.startsWith("⌂"));b.setGravity(Gravity.CENTER);b.setPadding(0,dp(5),0,dp(5));b.setBackground(bg(Color.WHITE,12));
             b.setOnClickListener(v->{if(n.startsWith("⌂"))showDashboard();else if(n.startsWith("▣"))showSubjects();else if(n.startsWith("▤"))showNotes();else if(n.startsWith("⌁"))showProgress();else showProfile();});
             nav.addView(b,new LinearLayout.LayoutParams(0,dp(62),1));}frame.addView(nav);
     }
     void card(String title,String sub,String action,View.OnClickListener click){
-        LinearLayout c=box();c.setBackground(bg(Color.WHITE,16));c.setPadding(dp(16),dp(14),dp(16),dp(14));
+        LinearLayout c=box();c.setBackground(bg(Color.WHITE,18));c.setPadding(dp(18),dp(14),dp(18),dp(14));lift(c,7);
         TextView t=tv(title,17,DARK,true);c.addView(t);c.addView(tv(sub,13,MUTED,false));
         if(action.length()>0){Button b=btn(action);b.setTextSize(12);b.setOnClickListener(click);c.addView(b,new LinearLayout.LayoutParams(-2,dp(42)));}
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(118));p.setMargins(0,dp(8),0,dp(8));content.addView(c,p);
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(118));p.setMargins(0,dp(7),0,dp(7));content.addView(c,p);
     }
     void showDashboard(){
         base("CrackNEET",false);
-        LinearLayout hero=box();hero.setPadding(dp(18),dp(16),dp(18),dp(16));hero.setBackground(bg(DARK,20));
+        LinearLayout hero=box();hero.setPadding(dp(20),dp(18),dp(20),dp(18));hero.setBackgroundResource(R.drawable.hero_gradient);lift(hero,10);
         TextView h1=tv("CrackNEET",27,Color.WHITE,true);hero.addView(h1);
         TextView h2=tv("Your NEET + JEE preparation companion",13,Color.rgb(210,235,229),false);hero.addView(h2);
         LinearLayout stats=new LinearLayout(this);stats.setPadding(0,dp(10),0,0);
