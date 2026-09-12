@@ -1,0 +1,57 @@
+name: Fix registration and welcome animation
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply fixes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('app/src/main/java/com/crackneet/app/MainActivity.java')
+          s=p.read_text()
+
+          # Keep the welcome/splash experience animated for at least 5 seconds.
+          s=s.replace('}},1200);', '}},5000);', 1)
+          s=s.replace('cap.animate().alpha(1f).scaleX(1f).scaleY(1f).rotationY(0f).setDuration(900).start();', 'cap.animate().alpha(1f).scaleX(1f).scaleY(1f).rotationY(0f).setDuration(1800).start();')
+          s=s.replace('glow.animate().scaleX(1.15f).scaleY(1.15f).alpha(.10f).setDuration(1300).start();', 'glow.animate().scaleX(1.18f).scaleY(1.18f).alpha(.10f).setDuration(2200).start();')
+
+          # Make registration networking tolerant of slow Render cold starts and show useful errors.
+          old='''                HttpURLConnection con=(HttpURLConnection)new URL(API_BASE+"/api/auth/register").openConnection();\n                con.setRequestMethod("POST");con.setDoOutput(true);con.setRequestProperty("Content-Type","application/json");'''
+          new='''                HttpURLConnection con=(HttpURLConnection)new URL(API_BASE+"/api/auth/register").openConnection();\n                con.setRequestMethod("POST");con.setDoOutput(true);\n                con.setConnectTimeout(20000);con.setReadTimeout(25000);\n                con.setRequestProperty("Content-Type","application/json; charset=UTF-8");\n                con.setRequestProperty("Accept","application/json");'''
+          if old not in s: raise SystemExit('register network block not found')
+          s=s.replace(old,new,1)
+
+          old='''                int code=con.getResponseCode();InputStream is=code>=400?con.getErrorStream():con.getInputStream();BufferedReader br=new BufferedReader(new InputStreamReader(is));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();\n                JSONObject out=new JSONObject(sb.toString());if(code!=201)throw new Exception(out.optString("error","Registration failed"));'''
+          new='''                int code=con.getResponseCode();InputStream raw=code>=400?con.getErrorStream():con.getInputStream();\n                if(raw==null) throw new Exception("Server returned HTTP "+code);\n                BufferedReader br=new BufferedReader(new InputStreamReader(raw,"UTF-8"));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();\n                JSONObject out; try{out=new JSONObject(sb.toString());}catch(Exception parse){throw new Exception("Server returned HTTP "+code);}\n                if(code!=201)throw new Exception(out.optString("error","Registration failed (HTTP "+code+")"));'''
+          if old not in s: raise SystemExit('register response block not found')
+          s=s.replace(old,new,1)
+
+          p.write_text(s)
+
+          p=Path('backend/src/server.js')
+          s=p.read_text()
+          old='''app.post("/api/auth/register",async(req,res)=>{\n try{\n  const {name,email,password}=req.body||{};\n  if(!name||!email||!password||password.length<8) return res.status(400).json({error:"name_email_and_8_char_password_required"});\n  const normalized=String(email).trim().toLowerCase();\n  const exists=await pool.query("SELECT id FROM users WHERE email=$1",[normalized]);\n  if(exists.rows.length) return res.status(409).json({error:"email_already_registered"});\n  const hash=await bcrypt.hash(String(password),12);\n  const u=await pool.query("INSERT INTO users(name,email,password_hash) VALUES($1,$2,$3) RETURNING id,name,email",[String(name).trim(),normalized,hash]);\n  const token=issueToken();\n  await pool.query("INSERT INTO sessions(user_id,token_hash,expires_at) VALUES($1,$2,NOW()+INTERVAL '30 days')",[u.rows[0].id,tokenHash(token)]);\n  res.status(201).json({user:u.rows[0],token});\n }catch(e){res.status(500).json({error:"registration_failed"});}\n});'''
+          new='''app.post("/api/auth/register",async(req,res)=>{\n try{\n  const {name,email,password}=req.body||{};\n  const cleanName=String(name||"").trim();\n  const normalized=String(email||"").trim().toLowerCase();\n  const cleanPassword=String(password||"");\n  if(cleanName.length<2||normalized.length<5||cleanPassword.length<8) return res.status(400).json({error:"name_email_and_8_char_password_required"});\n\n  // A Render cold start or an interrupted database migration must not turn into a generic registration failure.\n  // Ensure the account/session tables exist before the first registration attempt.\n  try{await pool.query("SELECT 1 FROM users LIMIT 1");}\n  catch(dbErr){console.error("Registration DB readiness check failed",dbErr); await ensureDatabase();}\n\n  const exists=await pool.query("SELECT id FROM users WHERE email=$1",[normalized]);\n  if(exists.rows.length) return res.status(409).json({error:"email_already_registered"});\n  const hash=await bcrypt.hash(cleanPassword,12);\n  const u=await pool.query("INSERT INTO users(name,email,password_hash) VALUES($1,$2,$3) RETURNING id,name,email",[cleanName,normalized,hash]);\n  const token=issueToken();\n  await pool.query("INSERT INTO sessions(user_id,token_hash,expires_at) VALUES($1,$2,NOW()+INTERVAL '30 days')",[u.rows[0].id,tokenHash(token)]);\n  res.status(201).json({user:u.rows[0],token});\n }catch(e){\n  console.error("Registration error",e);\n  const msg=String(e&&e.message||"");\n  if(msg.toLowerCase().includes("duplicate")||msg.toLowerCase().includes("unique")) return res.status(409).json({error:"email_already_registered"});\n  res.status(500).json({error:"registration_failed"});\n }\n});'''
+          if old not in s: raise SystemExit('backend register block not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+
+      - name: Commit fixes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/java/com/crackneet/app/MainActivity.java backend/src/server.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Fix registration and 5 second welcome animation"
+          git push
