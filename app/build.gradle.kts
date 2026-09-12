@@ -4,13 +4,13 @@ android {
     namespace = "com.crackneet.app"
     compileSdk = 36
 
-    defaultConfig {
+    buildFeatures {\n        buildConfig = true\n    }\n\n    defaultConfig {
         applicationId = "com.crackneet.app"
         minSdk = 23
         targetSdk = 36
         versionCode = 3
         versionName = "2.0.0"
-        buildConfigField("String", "BACKEND_URL", "\"https://YOUR-BACKEND-DOMAIN\"")
+        buildConfigField("String", "BACKEND_URL", "\"https://crackneet-api.onrender.com\"" )
     }
 
     signingConfigs {
