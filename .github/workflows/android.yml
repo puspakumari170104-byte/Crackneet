@@ -29,6 +29,16 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: echo "$KEYSTORE_BASE64" | base64 --decode > crackneet-upload.jks
 
+      - name: Verify release signing inputs
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          test -s crackneet-upload.jks
+          test -n "$KEYSTORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+
       - name: Build signed release AAB
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -49,6 +59,9 @@ jobs:
         with:
           name: CrackNEET-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+
+      - name: Verify AAB output
+        run: test -s app/build/outputs/bundle/release/*.aab
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
