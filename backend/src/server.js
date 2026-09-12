@@ -1,0 +1,15 @@
+require("dotenv").config();
+const express=require("express");
+const cors=require("cors");
+const helmet=require("helmet");
+const {Pool}=require("pg");
+const app=express();
+app.use(helmet());
+app.use(cors({origin:process.env.CORS_ORIGIN||"*"}));
+app.use(express.json({limit:"2mb"}));
+const pool=new Pool({connectionString:process.env.DATABASE_URL});
+app.get("/api/health",async(req,res)=>{try{await pool.query("SELECT 1");res.json({ok:true,service:"crackneet-api",database:"connected"});}catch(e){res.status(503).json({ok:false,database:"unavailable"});}});
+app.get("/api/questions",async(req,res)=>{try{const {exam,subject,type,limit}=req.query;const n=Math.min(Math.max(parseInt(limit||20),1),100);const params=[];const where=[];if(exam){params.push(exam);where.push("exam=$"+params.length)}if(subject){params.push(subject);where.push("subject=$"+params.length)}if(type){params.push(type);where.push("type=$"+params.length)}params.push(n);const q="SELECT id,exam,subject,chapter,type,difficulty,question,options,solution FROM questions "+(where.length?"WHERE "+where.join(" AND "):"")+" ORDER BY RANDOM() LIMIT $"+params.length;const {rows}=await pool.query(q,params);res.json({count:rows.length,questions:rows});}catch(e){res.status(500).json({error:"question_fetch_failed"});}});
+app.post("/api/tests/submit",async(req,res)=>{try{const {userId,exam,score,total,correct,wrong,skipped,durationSeconds,answers}=req.body;if(!exam||total==null) return res.status(400).json({error:"invalid_submission"});const r=await pool.query("INSERT INTO test_attempts(user_id,exam,score,total,correct,wrong,skipped,duration_seconds,answers) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id,created_at",[userId||null,exam,score||0,total,correct||0,wrong||0,skipped||0,durationSeconds||0,JSON.stringify(answers||[])]);res.status(201).json(r.rows[0]);}catch(e){res.status(500).json({error:"submission_failed"});}});
+app.get("/api/users/:id/progress",async(req,res)=>{try{const {rows}=await pool.query("SELECT COUNT(*) attempts,COALESCE(SUM(correct),0) correct,COALESCE(SUM(wrong),0) wrong,COALESCE(SUM(skipped),0) skipped,COALESCE(AVG(CASE WHEN total>0 THEN score::numeric*100/total END),0) accuracy FROM test_attempts WHERE user_id=$1",[req.params.id]);res.json(rows[0]);}catch(e){res.status(500).json({error:"progress_failed"});}});
+app.listen(process.env.PORT||8080,()=>console.log("CrackNEET API listening on "+(process.env.PORT||8080)));
