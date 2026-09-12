@@ -234,6 +234,8 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         card("⚗ Chemistry","Physical + Organic + Inorganic","Practice",v->startTest());
         card("⚡ Physics","Concept + numerical + PYQ","Practice",v->startTest());
         card("📈 Progress","Track attempts, accuracy and test performance","View Analysis",v->showAnalysis());
+        card("🎯 7-Day Challenge","Daily streak • 7 tests • 700 questions","Start Challenge",v->startTest());
+        card("🏆 Leaderboard","Compare your mock-test performance","View",v->new AlertDialog.Builder(this).setTitle("Leaderboard").setMessage("Leaderboard will populate as test attempts are completed.").setPositiveButton("OK",null).show());
     }
 
     void showPremium(){
