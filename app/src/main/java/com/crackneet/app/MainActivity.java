@@ -79,6 +79,10 @@ public class MainActivity extends Activity {
         if(action.length()>0){Button b=btn(action);b.setTextSize(12);b.setOnClickListener(click);c.addView(b,new LinearLayout.LayoutParams(-2,dp(42)));}
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(118));p.setMargins(0,dp(7),0,dp(7));content.addView(c,p);
     }
+    void miniCard(LinearLayout row,String icon,String title,String sub,View.OnClickListener click){
+        Button b=btn(icon+"  "+title+"\n"+sub);b.setTextSize(12);b.setTextColor(DARK);b.setGravity(Gravity.CENTER);b.setBackground(bg(Color.WHITE,18));b.setOnClickListener(click);lift(b,6);
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(82),1);p.setMargins(dp(4),dp(4),dp(4),dp(4));row.addView(b,p);
+    }
     void showDashboard(){
         base("CrackNEET",false);
         TextView greet=tv("Good Morning 👋",25,DARK,true);content.addView(greet);content.addView(tv("Your preparation dashboard",13,MUTED,false));
