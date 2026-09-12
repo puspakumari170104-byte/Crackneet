@@ -10,7 +10,7 @@ import java.util.*;
 
 public class MainActivity extends Activity {
     static final int GREEN=Color.rgb(0,170,118), DARK=Color.rgb(15,38,48), TEXT=Color.rgb(35,52,62), MUTED=Color.rgb(102,119,126), BG=Color.rgb(245,248,247);
-    FrameLayout root; LinearLayout content; String exam="NEET"; int qIndex=0,score=0; long duration=30;
+    FrameLayout root; LinearLayout content; String exam="NEET"; int qIndex=0,score=0; long duration=30; long remainingSeconds=0; CountDownTimer timer;
     ArrayList<Question> bank=new ArrayList<Question>(), test=new ArrayList<Question>(); ArrayList<Integer> answers=new ArrayList<Integer>(), marked=new ArrayList<Integer>();
 
     static class Question {
