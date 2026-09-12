@@ -1,5 +1,9 @@
 plugins { id("com.android.application") }
 
+dependencies {
+    implementation("com.android.billingclient:billing:9.1.0")
+}
+
 android {
     namespace = "com.crackneet.app"
     compileSdk = 36
