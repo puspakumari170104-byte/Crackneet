@@ -7,8 +7,12 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.*;
 import android.widget.*;
 import java.util.*;
+import java.net.*;
+import java.io.*;
+import org.json.*;
 
 public class MainActivity extends Activity {
+    static final String API_BASE="https://crackneet-api.onrender.com";
     static final int GREEN=Color.rgb(0,170,118), DARK=Color.rgb(15,38,48), TEXT=Color.rgb(35,52,62), MUTED=Color.rgb(102,119,126), BG=Color.rgb(245,248,247);
     FrameLayout root; LinearLayout content; String exam="NEET"; int qIndex=0,score=0; long duration=30; long remainingSeconds=0; CountDownTimer timer;
     ArrayList<Question> bank=new ArrayList<Question>(), test=new ArrayList<Question>(); ArrayList<Integer> answers=new ArrayList<Integer>(), marked=new ArrayList<Integer>();
@@ -123,8 +127,51 @@ void showSubjects(){
         new AlertDialog.Builder(this).setTitle("Select Test Duration").setMessage("Choose your test timing").setView(rg).setNegativeButton("Cancel",null).setPositiveButton("OK",(d,w)->{int id=rg.getCheckedRadioButtonId();int p=0;for(int i=0;i<rg.getChildCount();i++)if(rg.getChildAt(i).getId()==id)p=i;duration=times[p];startTest();}).show();
     }
     void startTest(){
-        test.clear();for(Question q:bank)if(q.exam.equals(exam))test.add(q);Collections.shuffle(test);if(test.size()>30)test=new ArrayList<Question>(test.subList(0,30));
-        qIndex=0;score=0;answers.clear();marked.clear();showQuestion();
+        final String selectedExam=exam;
+        new Thread(() -> {
+            ArrayList<Question> remote=fetchRemoteQuestions(selectedExam,30);
+            runOnUiThread(() -> {
+                test.clear();
+                if(remote.size()>0) test.addAll(remote);
+                else for(Question q:bank) if(q.exam.equals(selectedExam)) test.add(q);
+                Collections.shuffle(test); if(test.size()>30) test=new ArrayList<Question>(test.subList(0,30));
+                qIndex=0;score=0;answers.clear();marked.clear();showQuestion();
+            });
+        }).start();
+    }
+
+    ArrayList<Question> fetchRemoteQuestions(String selectedExam,int limit){
+        ArrayList<Question> out=new ArrayList<Question>(); HttpURLConnection con=null;
+        try{
+            String url=API_BASE+"/api/questions?exam="+URLEncoder.encode(selectedExam,"UTF-8")+"&limit="+limit;
+            con=(HttpURLConnection)new URL(url).openConnection(); con.setRequestMethod("GET"); con.setConnectTimeout(8000); con.setReadTimeout(10000);
+            if(con.getResponseCode()!=200)return out;
+            BufferedReader br=new BufferedReader(new InputStreamReader(con.getInputStream())); StringBuilder sb=new StringBuilder(); String line;
+            while((line=br.readLine())!=null)sb.append(line); br.close();
+            JSONArray arr=new JSONObject(sb.toString()).optJSONArray("questions"); if(arr==null)return out;
+            for(int i=0;i<arr.length();i++){
+                JSONObject o=arr.getJSONObject(i); JSONArray opts=o.optJSONArray("options"); String[] options=new String[opts==null?0:opts.length()];
+                for(int j=0;j<options.length;j++)options[j]=opts.optString(j);
+                if(options.length==0)continue;
+                out.add(new Question(o.optString("id"),o.optString("exam"),o.optString("subject"),o.optString("chapter"),o.optString("type"),o.optString("difficulty"),o.optString("question"),options,o.optInt("answer_index",0),o.optString("solution")));
+            }
+        }catch(Exception ignored){} finally{if(con!=null)con.disconnect();}
+        return out;
+    }
+
+    void submitAttemptToServer(){
+        final int finalScore=calculateScore(); final int total=test.size(); int wrong=0,skipped=0;
+        for(int i=0;i<total;i++){int a=answers.size()>i?answers.get(i):-1;if(a<0)skipped++;else if(a!=test.get(i).answer)wrong++;}
+        final int finalWrong=wrong,finalSkipped=skipped; final ArrayList<Integer> finalAnswers=new ArrayList<Integer>(answers);
+        new Thread(() -> {
+            HttpURLConnection con=null;
+            try{
+                con=(HttpURLConnection)new URL(API_BASE+"/api/tests/submit").openConnection(); con.setRequestMethod("POST"); con.setDoOutput(true); con.setRequestProperty("Content-Type","application/json"); con.setConnectTimeout(8000); con.setReadTimeout(10000);
+                JSONObject body=new JSONObject(); body.put("userId",JSONObject.NULL); body.put("exam",exam); body.put("score",finalScore); body.put("total",total); body.put("correct",finalScore); body.put("wrong",finalWrong); body.put("skipped",finalSkipped); body.put("durationSeconds",Math.max(0,(int)(duration*60-remainingSeconds)));
+                JSONArray ans=new JSONArray(); for(Integer a:finalAnswers)ans.put(a==null?-1:a); body.put("answers",ans);
+                OutputStream os=con.getOutputStream(); os.write(body.toString().getBytes("UTF-8")); os.close(); con.getResponseCode();
+            }catch(Exception ignored){} finally{if(con!=null)con.disconnect();}
+        }).start();
     }
     void showQuestion(){
         base("Test • "+(qIndex+1)+"/"+test.size(),true);
@@ -151,6 +198,7 @@ void showSubjects(){
     }
     void showResult(){
         if(timer!=null){timer.cancel();timer=null;}
+        submitAttemptToServer();
         base("Test Result",true);score=calculateScore();int total=test.size(),wrong=0,unattempted=0;for(int i=0;i<total;i++){int a=answers.size()>i?answers.get(i):-1;if(a<0)unattempted++;else if(a!=test.get(i).answer)wrong++;}
         int accuracy=total==0?0:score*100/total;
         LinearLayout hero=box();hero.setGravity(Gravity.CENTER);hero.setBackgroundResource(R.drawable.hero_gradient);lift(hero,12);
