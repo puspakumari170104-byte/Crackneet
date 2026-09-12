@@ -225,6 +225,17 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         }
     }
 
+    void showStudyPlanner(){
+        base("Study Planner",true);
+        content.addView(tv("📅 Your Preparation Plan",24,DARK,true));
+        content.addView(tv("Plan daily practice across Physics, Chemistry and Biology",13,MUTED,false));
+        card("🔥 Today's Target","40 questions • 60 minutes • Mixed practice","Start",v->startTest());
+        card("🧬 Biology","NCERT + NEET PYQ practice","Practice",v->startTest());
+        card("⚗ Chemistry","Physical + Organic + Inorganic","Practice",v->startTest());
+        card("⚡ Physics","Concept + numerical + PYQ","Practice",v->startTest());
+        card("📈 Progress","Track attempts, accuracy and test performance","View Analysis",v->showAnalysis());
+    }
+
     void showPremium(){
         base("CrackNEET Pro",true);
         LinearLayout hero=box();hero.setBackgroundResource(R.drawable.hero_gradient);hero.setPadding(dp(20),dp(20),dp(20),dp(20));
