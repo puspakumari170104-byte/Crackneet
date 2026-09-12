@@ -175,7 +175,7 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
     void showAnalysis(){
         base("Test Analysis",true);score=calculateScore();content.addView(tv("Performance Breakdown",21,DARK,true));
         int[] counts={0,0,0};for(int i=0;i<test.size();i++){Question q=test.get(i);int a=answers.size()>i?answers.get(i):-1;if(a==q.answer)counts[0]++;else if(a<0)counts[2]++;else counts[1]++;}
-        card("Overall Accuracy",score+" correct out of "+test.size(),score*100/Math.max(1,test.size())+"%",v->{});
+        int total=test.size(),attempted=total-counts[2],accuracy=attempted==0?0:score*100/attempted; card("Overall Accuracy",score+" correct • "+attempted+" attempted",accuracy+"%",v->{});\n        card("Accuracy Meter","Correct "+score+"  •  Wrong "+counts[1]+"  •  Skipped "+counts[2],accuracy+"% Accuracy",v->{});
         card("Correct Answers","Strong areas • "+counts[0]+" questions","Review",v->showSolutions());
         card("Wrong Answers","Topics needing revision • "+counts[1]+" questions","Review",v->showSolutions());
         card("Unattempted","Questions skipped • "+counts[2],"Review",v->showSolutions());
