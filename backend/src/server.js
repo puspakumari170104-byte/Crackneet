@@ -9,12 +9,17 @@ const app=express();
 app.use(helmet());
 app.use(cors({origin:process.env.CORS_ORIGIN||"*"}));
 app.use(express.json({limit:"2mb"}));
-const pool=new Pool({connectionString:process.env.DATABASE_URL});
-async function ensureSessionTable(){
- await pool.query("CREATE TABLE IF NOT EXISTS sessions(id BIGSERIAL PRIMARY KEY,user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,token_hash TEXT UNIQUE NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),expires_at TIMESTAMPTZ NOT NULL)");
+const pool=new Pool({connectionString:process.env.DATABASE_URL,max:Number(process.env.DB_POOL_MAX||10),idleTimeoutMillis:Number(process.env.DB_IDLE_TIMEOUT_MS||30000),connectionTimeoutMillis:Number(process.env.DB_CONNECTION_TIMEOUT_MS||5000),ssl:process.env.DATABASE_SSL==="true"?{rejectUnauthorized:process.env.DATABASE_SSL_REJECT_UNAUTHORIZED!=="false"}:undefined});
+pool.on("error",(err)=>console.error("PostgreSQL pool error:",err));
+async function ensureDatabase(){
+ await pool.query(`CREATE TABLE IF NOT EXISTS users(id BIGSERIAL PRIMARY KEY,name TEXT NOT NULL,email TEXT UNIQUE NOT NULL,password_hash TEXT,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
+ await pool.query(`CREATE TABLE IF NOT EXISTS questions(id TEXT PRIMARY KEY,exam TEXT NOT NULL,subject TEXT NOT NULL,chapter TEXT,type TEXT NOT NULL,difficulty TEXT,question TEXT NOT NULL,options JSONB NOT NULL,answer_index INT NOT NULL,solution TEXT)`);
+ await pool.query(`CREATE TABLE IF NOT EXISTS test_attempts(id BIGSERIAL PRIMARY KEY,user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,exam TEXT NOT NULL,score INT NOT NULL DEFAULT 0,total INT NOT NULL,correct INT NOT NULL DEFAULT 0,wrong INT NOT NULL DEFAULT 0,skipped INT NOT NULL DEFAULT 0,duration_seconds INT NOT NULL DEFAULT 0,answers JSONB,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
+ await pool.query(`CREATE TABLE IF NOT EXISTS sessions(id BIGSERIAL PRIMARY KEY,user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,token_hash TEXT UNIQUE NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),expires_at TIMESTAMPTZ NOT NULL)`);
+ await pool.query("CREATE INDEX IF NOT EXISTS idx_questions_filters ON questions(exam,subject,type)");
+ await pool.query("CREATE INDEX IF NOT EXISTS idx_attempts_user ON test_attempts(user_id,created_at DESC)");
  await pool.query("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token_hash)");
 }
-
 
 app.get("/api/health",async(req,res)=>{try{await pool.query("SELECT 1");res.json({ok:true,service:"crackneet-api",database:"connected"});}catch(e){res.status(503).json({ok:false,database:"unavailable"});}});
 
@@ -58,8 +63,14 @@ app.post("/api/auth/login",async(req,res)=>{
  }catch(e){res.status(500).json({error:"login_failed"});}
 });
 
+app.post("/api/auth/logout",auth,async(req,res)=>{try{await pool.query("DELETE FROM sessions WHERE token_hash=$1",[req.user.token_hash]);res.json({ok:true});}catch(e){res.status(500).json({error:"logout_failed"});}});
+app.get("/api/users/me",auth,(req,res)=>res.json({user:{id:req.user.id,name:req.user.name,email:req.user.email}}));
+
 app.delete("/api/auth/account",auth,async(req,res)=>{
- try{await pool.query("BEGIN");await pool.query("DELETE FROM test_attempts WHERE user_id=$1",[req.user.id]);await pool.query("DELETE FROM sessions WHERE user_id=$1",[req.user.id]);await pool.query("DELETE FROM users WHERE id=$1",[req.user.id]);await pool.query("COMMIT");res.json({ok:true});}catch(e){await pool.query("ROLLBACK");res.status(500).json({error:"account_deletion_failed"});}
+ const client=await pool.connect();
+ try{await client.query("BEGIN");await client.query("DELETE FROM test_attempts WHERE user_id=$1",[req.user.id]);await client.query("DELETE FROM sessions WHERE user_id=$1",[req.user.id]);await client.query("DELETE FROM users WHERE id=$1",[req.user.id]);await client.query("COMMIT");res.json({ok:true});}
+ catch(e){await client.query("ROLLBACK").catch(()=>{});res.status(500).json({error:"account_deletion_failed"});}
+ finally{client.release();}
 });
 
 app.get("/api/questions",async(req,res)=>{try{const {exam,subject,type,limit}=req.query;const n=Math.min(Math.max(parseInt(limit||20),1),100);const params=[];const where=[];if(exam){params.push(exam);where.push("exam=$"+params.length)}if(subject){params.push(subject);where.push("subject=$"+params.length)}if(type){params.push(type);where.push("type=$"+params.length)}params.push(n);const q="SELECT id,exam,subject,chapter,type,difficulty,question,options,answer_index,solution FROM questions "+(where.length?"WHERE "+where.join(" AND "):"")+" ORDER BY RANDOM() LIMIT $"+params.length;const {rows}=await pool.query(q,params);res.json({count:rows.length,questions:rows});}catch(e){res.status(500).json({error:"question_fetch_failed"});}});
