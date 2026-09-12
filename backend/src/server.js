@@ -60,7 +60,6 @@ app.post("/api/auth/login",async(req,res)=>{
 
 app.delete("/api/auth/account",auth,async(req,res)=>{
  try{await pool.query("BEGIN");await pool.query("DELETE FROM test_attempts WHERE user_id=$1",[req.user.id]);await pool.query("DELETE FROM sessions WHERE user_id=$1",[req.user.id]);await pool.query("DELETE FROM users WHERE id=$1",[req.user.id]);await pool.query("COMMIT");res.json({ok:true});}catch(e){await pool.query("ROLLBACK");res.status(500).json({error:"account_deletion_failed"});}
- catch(e){res.status(500).json({error:"account_deletion_failed"});}
 });
 
 app.get("/api/questions",async(req,res)=>{try{const {exam,subject,type,limit}=req.query;const n=Math.min(Math.max(parseInt(limit||20),1),100);const params=[];const where=[];if(exam){params.push(exam);where.push("exam=$"+params.length)}if(subject){params.push(subject);where.push("subject=$"+params.length)}if(type){params.push(type);where.push("type=$"+params.length)}params.push(n);const q="SELECT id,exam,subject,chapter,type,difficulty,question,options,answer_index,solution FROM questions "+(where.length?"WHERE "+where.join(" AND "):"")+" ORDER BY RANDOM() LIMIT $"+params.length;const {rows}=await pool.query(q,params);res.json({count:rows.length,questions:rows});}catch(e){res.status(500).json({error:"question_fetch_failed"});}});
