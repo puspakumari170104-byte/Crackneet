@@ -202,8 +202,26 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         card("Help & Support","FAQs • Contact support","Open",v->new AlertDialog.Builder(this).setTitle("Help & Support").setMessage("For support, please contact CrackNEET support.").setPositiveButton("OK",null).show());
     }
     void showAnalysisSafe(){if(test.size()>0)showAnalysis();else new AlertDialog.Builder(this).setTitle("Test History").setMessage("No completed test yet. Start a test to see your history and detailed analysis here.").setPositiveButton("Start Test",(d,w)->showSubjects()).show();}
-    void showSettings(){new AlertDialog.Builder(this).setTitle("Settings").setItems(new String[]{"Notifications","Dark Theme","Account","Logout"},(d,w)->{if(w==3)showWelcome();}).show();}
-    void showPremium(){base("CrackNEET Pro",true);content.addView(tv("Premium Preparation",26,DARK,true));content.addView(tv("₹99 / month",24,GREEN,true));card("Premium Tests","Full mock + chapter tests","Unlock",v->{});card("Advanced Analytics","Weak topics + performance trend","Unlock",v->{});}
+    void showSettings(){
+        base("Settings",true);
+        content.addView(tv("Preferences",20,DARK,true));
+        card("🔔 Notifications","Daily practice reminders and test alerts","Manage",v->new AlertDialog.Builder(this).setTitle("Notifications").setMessage("Daily reminders are enabled for this build.").setPositiveButton("OK",null).show());
+        card("🌙 Appearance","Light, dark and system interface options","Choose",v->new AlertDialog.Builder(this).setTitle("Appearance").setItems(new String[]{"Light","Dark","System Default"},null).show());
+        card("👤 Account","Profile and learning preferences","Open Profile",v->showProfile());
+        card("🔒 Privacy","Practice data and app preferences","View",v->new AlertDialog.Builder(this).setTitle("Privacy").setMessage("Practice progress is stored locally in this prototype.").setPositiveButton("OK",null).show());
+        card("↪ Logout","Return to the welcome screen","Logout",v->showWelcome());
+    }
+    void showPremium(){
+        base("CrackNEET Pro",true);
+        LinearLayout hero=box();hero.setBackgroundResource(R.drawable.hero_gradient);hero.setPadding(dp(20),dp(20),dp(20),dp(20));
+        hero.addView(tv("✦  CRACKNEET PRO",13,Color.WHITE,true));hero.addView(tv("Serious preparation. Smarter practice.",22,Color.WHITE,true));hero.addView(tv("₹99 / month  •  Cancel anytime",12,Color.rgb(220,240,235),false));content.addView(hero);
+        content.addView(tv("Everything you need",19,DARK,true));
+        card("🚀 Full Mock Tests","Complete NEET + JEE Main timed tests","Unlock Pro",v->premiumDialog("Full Mock Tests"));
+        card("🧠 Advanced Question Bank","PYQ-based + Assertion-Reason + Statement + Match Column","Unlock Pro",v->premiumDialog("Advanced Question Bank"));
+        card("📊 Advanced Analytics","Weak chapters, accuracy and performance trends","Unlock Pro",v->premiumDialog("Advanced Analytics"));
+        card("⭐ Smart Revision","Revision from attempted questions","Unlock Pro",v->premiumDialog("Smart Revision"));
+    }
+    void premiumDialog(String feature){new AlertDialog.Builder(this).setTitle("CrackNEET Pro").setMessage(feature+" is included in Pro.").setPositiveButton("Continue",null).setNegativeButton("Later",null).show();}
     void showDrawer(){final String[] items={"Home","Tests","Notes","Progress","Profile","Premium"};new AlertDialog.Builder(this).setTitle("CrackNEET").setItems(items,(d,w)->{if(w==0)showDashboard();else if(w==1)showSubjects();else if(w==2)showNotes();else if(w==3)showProgress();else if(w==4)showProfile();else showPremium();}).show();}
     @Override public void onBackPressed(){showDashboard();}
 
