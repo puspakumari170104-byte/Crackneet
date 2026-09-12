@@ -340,10 +340,15 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         content.addView(tv("🎯 Line-by-line • NEET probability focused • Chapter-wise",13,MUTED,false));
         content.addView(tv("Choose one subject",15,DARK,true));
         LinearLayout s1=new LinearLayout(this); s1.setGravity(Gravity.CENTER);
-        miniCard(s1,"⚛️","Physics","NCERT Tests",v->showNcertChapter("Class 11","Physics"));
-        miniCard(s1,"🧪","Chemistry","NCERT Tests",v->showNcertChapter("Class 11","Chemistry"));
-        miniCard(s1,"🧬","Biology","NCERT Tests",v->showNcertChapter("Class 11","Biology"));
+        miniCard(s1,"⚛️","Physics","Class 11",v->showNcertChapter("Class 11","Physics"));
+        miniCard(s1,"🧪","Chemistry","Class 11",v->showNcertChapter("Class 11","Chemistry"));
+        miniCard(s1,"🧬","Biology","Class 11",v->showNcertChapter("Class 11","Biology"));
         content.addView(s1);
+        LinearLayout s2=new LinearLayout(this); s2.setGravity(Gravity.CENTER);
+        miniCard(s2,"⚛️","Physics","Class 12",v->showNcertChapter("Class 12","Physics"));
+        miniCard(s2,"🧪","Chemistry","Class 12",v->showNcertChapter("Class 12","Chemistry"));
+        miniCard(s2,"🧬","Biology","Class 12",v->showNcertChapter("Class 12","Biology"));
+        content.addView(s2);
         content.addView(tv("NCERT concepts → NEET-pattern MCQs → fresh data variations",13,MUTED,false));
         card("Class 11 Biology","Chapter-wise NCERT concept practice • 45-question tests","Start Practice",v->showNcertChapter("Class 11","Biology"));
         card("Class 12 Biology","NCERT line/concept based NEET practice","Start Practice",v->showNcertChapter("Class 12","Biology"));
@@ -358,8 +363,12 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         String[] chapters;
         if(cls.equals("Class 11") && subject.equals("Biology")) chapters=new String[]{"The Living World","Biological Classification","Plant Kingdom","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Structural Organisation in Animals","Cell: The Unit of Life","Biomolecules","Cell Cycle and Cell Division","Transport in Plants","Mineral Nutrition","Photosynthesis in Higher Plants","Respiration in Plants","Plant Growth and Development","Digestion and Absorption","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and their Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration"};
         else if(cls.equals("Class 12") && subject.equals("Biology")) chapters=new String[]{"Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation","Environmental Issues"};
-        else if(subject.equals("Chemistry")) chapters=new String[]{"Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","Thermodynamics","Equilibrium","Redox Reactions","Organic Chemistry: Basic Principles","Hydrocarbons"};
-        else chapters=new String[]{"Units and Measurements","Motion in a Straight Line","Motion in a Plane","Laws of Motion","Work, Energy and Power","System of Particles and Rotational Motion","Gravitation","Mechanical Properties of Solids","Mechanical Properties of Fluids","Thermal Properties of Matter","Thermodynamics","Kinetic Theory","Oscillations","Waves"};
+        else if(subject.equals("Chemistry")) chapters = cls.equals("Class 12")
+                ? new String[]{"Solutions","Electrochemistry","Chemical Kinetics","Haloalkanes and Haloarenes","Alcohols Phenols and Ethers","Aldehydes Ketones and Carboxylic Acids","Amines","Biomolecules"}
+                : new String[]{"Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","Thermodynamics","Equilibrium","Redox Reactions","Organic Chemistry: Basic Principles","Hydrocarbons"};
+        else chapters = cls.equals("Class 12")
+                ? new String[]{"Electric Charges and Fields","Electrostatic Potential and Capacitance","Current Electricity","Moving Charges and Magnetism","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics","Wave Optics","Dual Nature of Radiation and Matter","Atoms","Nuclei","Semiconductor Electronics"}
+                : new String[]{"Units and Measurements","Motion in a Straight Line","Motion in a Plane","Laws of Motion","Work, Energy and Power","System of Particles and Rotational Motion","Gravitation","Mechanical Properties of Solids","Mechanical Properties of Fluids","Thermal Properties of Matter","Thermodynamics","Kinetic Theory","Oscillations","Waves"};
         for(final String ch:chapters) card(ch,"NCERT concept + NEET-pattern questions","Practice",v->startNcertSampleTest());
     }
     void startNcertSampleTest(){
