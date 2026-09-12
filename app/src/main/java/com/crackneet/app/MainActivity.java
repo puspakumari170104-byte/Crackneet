@@ -10,71 +10,122 @@ import java.util.*;
 
 public class MainActivity extends Activity {
     static final int GREEN=Color.rgb(0,170,118), DARK=Color.rgb(15,38,48), TEXT=Color.rgb(35,52,62), MUTED=Color.rgb(102,119,126), BG=Color.rgb(245,248,247);
-    FrameLayout root; LinearLayout content, bottom; TextView screenTitle;
-    ArrayList<Question> bank=new ArrayList<>(), test=new ArrayList<>(); int qIndex,score,attempted; long testDurationMinutes=30;
-    boolean loadingBank=false; String exam="NEET"; long started;
-    Handler handler=new Handler(); Runnable splash;
-    final ArrayList<Integer> answers=new ArrayList<>();
-    final ArrayList<Integer> marked=new ArrayList<>();
+    FrameLayout root; LinearLayout content; String exam="NEET"; int qIndex=0,score=0; long duration=30;
+    ArrayList<Question> bank=new ArrayList<Question>(), test=new ArrayList<Question>(); ArrayList<Integer> answers=new ArrayList<Integer>(), marked=new ArrayList<Integer>();
 
     static class Question {
-        String id,exam,subject,chapter,type,difficulty,q,solution; String[] options; int answer;
-        Question(String id,String exam,String subject,String chapter,String type,String difficulty,String q,String[] options,int answer,String solution){
-            this.id=id;this.exam=exam;this.subject=subject;this.chapter=chapter;this.type=type;this.difficulty=difficulty;this.q=q;this.options=options;this.answer=answer;this.solution=solution;
+        String id,exam,subject,chapter,type,difficulty,text,solution; String[] options; int answer;
+        Question(String id,String exam,String subject,String chapter,String type,String difficulty,String text,String[] options,int answer,String solution){
+            this.id=id;this.exam=exam;this.subject=subject;this.chapter=chapter;this.type=type;this.difficulty=difficulty;this.text=text;this.options=options;this.answer=answer;this.solution=solution;
         }
     }
 
-    @Override public void onCreate(Bundle b){super.onCreate(b);setContentView(R.layout.activity_main);root=findViewById(R.id.root);showSplash();new Thread(()->{bank=QuestionBank.generate40000();loadingBank=false;}).start();}
-    int dp(int v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
-    TextView tv(String s,float size,int color,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(color);t.setTypeface(null,bold?1:0);t.setIncludeFontPadding(true);return t;}
-    GradientDrawable bg(int color,float r){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp((int)r));return g;}
-    LinearLayout box(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);l.setPadding(dp(16),dp(14),dp(16),dp(14));return l;}
-    Button btn(String s){Button b=new Button(this);b.setText(s);b.setTextSize(14);b.setTextColor(Color.WHITE);b.setAllCaps(false);b.setTypeface(null,1);b.setBackground(bg(GREEN,14));b.setPadding(dp(12),0,dp(12),0);return b;}
-    void showSplash(){root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER);l.setBackgroundColor(Color.rgb(7,24,31));TextView logo=tv("🎓 CrackNEET",34,Color.WHITE,true);logo.setGravity(17);l.addView(logo,new LinearLayout.LayoutParams(-1,dp(120)));TextView sub=tv("Your NEET Preparation Companion",16,Color.LTGRAY,false);sub.setGravity(17);l.addView(sub);root.addView(l);splash=()->showWelcome();handler.postDelayed(splash,1100);}
-    void base(String title,boolean back){root.removeAllViews();LinearLayout frame=new LinearLayout(this);frame.setOrientation(LinearLayout.VERTICAL);frame.setBackgroundColor(BG);
-        LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(dp(12),dp(10),dp(12),dp(8));
-        if(back){Button b=btn("‹");b.setTextColor(DARK);b.setBackgroundColor(Color.TRANSPARENT);b.setOnClickListener(v->showDashboard());top.addView(b,new LinearLayout.LayoutParams(dp(48),dp(48)));}
-        screenTitle=tv(title,21,DARK,true);top.addView(screenTitle,new LinearLayout.LayoutParams(0,dp(48),1));
-        Button menu=btn("⋮");menu.setTextColor(DARK);menu.setBackgroundColor(Color.TRANSPARENT);menu.setOnClickListener(v->showDrawer());top.addView(menu,new LinearLayout.LayoutParams(dp(48),dp(48)));
-        frame.addView(top);ScrollView sc=new ScrollView(this);content=box();sc.addView(content);frame.addView(sc,new LinearLayout.LayoutParams(-1,0,1));root.addView(frame);
-        addBottom(frame);
+    @Override public void onCreate(Bundle b){
+        super.onCreate(b); setContentView(R.layout.activity_main); root=findViewById(R.id.root);
+        showSplash(); bank=QuestionBank.generate40000();
     }
-    void addBottom(LinearLayout frame){bottom=new LinearLayout(this);bottom.setGravity(Gravity.CENTER);bottom.setPadding(4,5,4,5);bottom.setBackgroundColor(Color.WHITE);String[] labels={"⌂
-    void addBottom(LinearLayout frame){bottom=new LinearLayout(this);bottom.setGravity(Gravity.CENTER);bottom.setPadding(4,5,4,5);bottom.setBackgroundColor(Color.WHITE);String[] labels={"⌂ Home","▣ Tests","▤ Notes","⌁ Progress","♙ Profile"};for(String x:labels){Button b=btn(x);b.setTextSize(11);b.setTextColor(MUTED);b.setBackgroundColor(Color.TRANSPARENT);String k=x.substring(0,1);if(k.equals("⌂"))b.setOnClickListener(v->showDashboard());else if(k.equals("▣"))b.setOnClickListener(v->showSubjects());else if(k.equals("▤"))b.setOnClickListener(v->showNotes());else if(k.equals("⌁"))b.setOnClickListener(v->showProgress());else b.setOnClickListener(v->showProfile());bottom.addView(b,new LinearLayout.LayoutParams(0,dp(58),1));}frame.addView(bottom);}
-    void showWelcome(){root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER_HORIZONTAL);l.setPadding(dp(24),dp(40),dp(24),dp(24));TextView logo=tv("🎓  CrackNEET",30,DARK,true);logo.setGravity(17);l.addView(logo,new LinearLayout.LayoutParams(-1,dp(80)));l.addView(tv("Welcome Back!",20,TEXT,true));l.addView(tv("Your NEET journey continues here.",14,MUTED,false));EditText email=new EditText(this);email.setHint("Email or Mobile Number");l.addView(email,new LinearLayout.LayoutParams(-1,dp(58)));EditText pass=new EditText(this);pass.setHint("Password");pass.setInputType(129);l.addView(pass,new LinearLayout.LayoutParams(-1,dp(58)));Button login=btn("Login");login.setOnClickListener(v->showDashboard());l.addView(login,new LinearLayout.LayoutParams(-1,dp(52)));TextView or=tv("
-OR
-",13,MUTED,false);or.setGravity(17);l.addView(or);Button guest=btn("Continue as Guest");guest.setOnClickListener(v->showDashboard());l.addView(guest,new LinearLayout.LayoutParams(-1,dp(52)));TextView signup=tv("
-Don't have an account?  Sign Up",13,GREEN,true);signup.setGravity(17);l.addView(signup);root.addView(l);}
-    void showDashboard(){base("CrackNEET",false);content.addView(tv("Good Morning, Aarav 👋",24,DARK,true));content.addView(tv("Keep going. Your hard work will pay off.",13,MUTED,false));Space s=new Space(this);content.addView(s,new LinearLayout.LayoutParams(1,dp(10)));
-        LinearLayout stats=new LinearLayout(this);stats.setWeightSum(2);stats.addView(stat("Today's Target","3/10","Chapters"),new LinearLayout.LayoutParams(0,dp(100),1));stats.addView(stat("Study Streak","7","Days"),new LinearLayout.LayoutParams(0,dp(100),1));content.addView(stats);
-    void showWelcome(){root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER_HORIZONTAL);l.setPadding(dp(24),dp(40),dp(24),dp(24));TextView logo=tv("🎓  CrackNEET",30,DARK,true);logo.setGravity(17);l.addView(logo,new LinearLayout.LayoutParams(-1,dp(80)));l.addView(tv("Welcome Back!",20,TEXT,true));l.addView(tv("Your NEET journey continues here.",14,MUTED,false));EditText email=new EditText(this);email.setHint("Email or Mobile Number");l.addView(email,new LinearLayout.LayoutParams(-1,dp(58)));EditText pass=new EditText(this);pass.setHint("Password");pass.setInputType(129);l.addView(pass,new LinearLayout.LayoutParams(-1,dp(58)));Button login=btn("Login");login.setOnClickListener(v->showDashboard());l.addView(login,new LinearLayout.LayoutParams(-1,dp(52)));TextView or=tv("OR",13,MUTED,false);or.setGravity(17);l.addView(or);Button guest=btn("Continue as Guest");guest.setOnClickListener(v->showDashboard());l.addView(guest,new LinearLayout.LayoutParams(-1,dp(52)));TextView signup=tv("Don’t have an account?  Sign Up",13,GREEN,true);signup.setGravity(17);l.addView(signup);root.addView(l);}
-    View stat(String a,String b,String c){LinearLayout x=box();x.setBackground(bg(Color.WHITE,16));x.setGravity(Gravity.CENTER);x.addView(tv(a,11,MUTED,false));x.addView(tv(b,24,DARK,true));x.addView(tv(c,11,MUTED,false));return x;}
-    void showSubjects(){base("Subjects",true);content.addView(tv("Choose your subject",22,DARK,true));content.addView(tv("Chapter-wise practice and tests",13,MUTED,false));String[][] data={{"⚛","Physics","12 Chapters • 320 Questions"},{"⚗","Chemistry","14 Chapters • 420 Questions"},{"🌿","Biology","16 Chapters • 480 Questions"},{"∑","Mathematics","18 Chapters • 600 Questions"}};for(String[] d:data)card(d[0]+"  "+d[1],d[2],"›",v->showChapters(d[1]));}
-    void showChapters(String subject){base(subject,true);content.addView(tv("Chapters",22,DARK,true));String[] ch=subject.equals("Biology")?new String[]{"Diversity in Living Organisms","Structural Organisation in Plants","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Cell: The Unit of Life","Human Physiology","Genetics"}:subject.equals("Physics")?new String[]{"Units & Measurements","Kinematics","Laws of Motion","Work Energy Power","Current Electricity","Optics","Modern Physics"}:subject.equals("Chemistry")?new String[]{"Some Basic Concepts","Atomic Structure","Chemical Bonding","Thermodynamics","Equilibrium","Electrochemistry","Organic Chemistry"}:new String[]{"Sets","Matrices","Quadratic Equations","Sequence & Series","Limits","Differentiation","Probability"};int n=1;for(String x:ch){final String c=x;card(n+++". "+x,"15/15 questions • Practice + Notes","›",v->startInstructions(exam));}}
-    void startInstructions(String e){exam=e;base("Test Instructions",true);content.addView(tv(e+" • Full Mock Test",21,DARK,true));content.addView(tv("180 Questions • +4 / -1",14,MUTED,false));card("General Instructions","Read each question carefully. Use the palette to navigate. You can mark questions for review. The test auto-submits when time ends.","Choose Time",v->chooseTime(e));}
-    void chooseTime(String e){ final String[] labels={"30 minutes","60 minutes","90 minutes"}; final long[] times={30L,60L,90L}; LinearLayout wrap=new LinearLayout(this); wrap.setOrientation(LinearLayout.VERTICAL); wrap.setPadding(dp(18),dp(4),dp(18),dp(4)); TextView hint=tv("Select test duration",14,MUTED,false); wrap.addView(hint); RadioGroup rg=new RadioGroup(this); for(String label:labels){RadioButton rb=new RadioButton(this);rb.setText(label);rb.setTextSize(16);rb.setPadding(0,dp(8),0,dp(8));rg.addView(rb);} ((RadioButton)rg.getChildAt(0)).setChecked(true); wrap.addView(rg); new AlertDialog.Builder(this).setTitle("Choose test duration").setView(wrap).setNegativeButton("Cancel",null).setPositiveButton("OK",(d,w)->{int id=rg.getCheckedRadioButtonId();int pos=rg.indexOfChild(rg.findViewById(id));if(pos<0)pos=0;testDurationMinutes=times[pos];startTest(e);}).show();}
-    void startTest(String e){exam=e;test=new ArrayList<>();for(Question q:bank)if(q.exam.equals(e))test.add(q);Collections.shuffle(test);if(test.size()>30)test=new ArrayList<>(test.subList(0,30));qIndex=0;score=0;attempted=0;answers.clear();marked.clear();started=System.currentTimeMillis();showQuestion();}
-    void showQuestion(){base("Question "+(qIndex+1)+" / "+test.size(),true);if(test.isEmpty()){content.addView(tv("Preparing your question bank…",18,DARK,true));return;}Question q=test.get(qIndex);content.addView(tv(q.subject+" • "+q.chapter+" • "+q.difficulty,12,GREEN,true));content.addView(tv(q.q,19,TEXT,true));RadioGroup rg=new RadioGroup(this);for(int i=0;i<q.options.length;i++){RadioButton r=new RadioButton(this);r.setText(q.options[i]);r.setTextSize(15);r.setPadding(dp(6),dp(10),dp(6),dp(10));rg.addView(r);}content.addView(rg);Button mark=btn(marked.contains(qIndex)?"★ Marked":"☆ Mark for Review");mark.setOnClickListener(v->{if(marked.contains(qIndex))marked.remove((Integer)qIndex);else marked.add(qIndex);showQuestion();});content.addView(mark);Button next=btn(qIndex==test.size()-1?"Finish Test":"Next →");next.setOnClickListener(v->{int id=rg.getCheckedRadioButtonId();if(id!=-1){int chosen=rg.indexOfChild(findViewById(id));answers.add(chosen);attempted++;if(chosen==q.answer)score++;}else answers.add(-1);qIndex++;if(qIndex>=test.size())showResult();else showQuestion();});content.addView(next);Button palette=btn("Question Palette");palette.setOnClickListener(v->showPalette());content.addView(palette);}
-     void showPalette(){StringBuilder s=new StringBuilder("Answered: ");s.append(attempted).append("\nMarked: ").append(marked.size()).append("\n\n");for(int i=0;i<test.size();i++)s.append(i+1).append(i<answers.size()&&answers.get(i)>=0?" ✓":" ○").append(i%5==4?"\n":"   ");new AlertDialog.Builder(this).setTitle("Question Palette").setMessage(s.toString()).setPositiveButton("Close",null).show();}
-     void showResult(){base("Test Result",true);int accuracy=test.isEmpty()?0:(score*100/test.size());content.addView(tv(accuracy+"%",42,GREEN,true));content.addView(tv("Accuracy",14,MUTED,false));card("Total Score",score+" / "+test.size(),"Analysis",v->showProgress());card("Time Taken","24:18","",v->{});content.addView(tv("Subject-wise Performance",18,DARK,true));card("Physics","Strong • 85%","",v->{});card("Chemistry","Good • 80%","",v->{});card("Biology","Strong • 90%","",v->{});Button again=btn("Retake Test");again.setOnClickListener(v->startTest(exam));content.addView(again);}
-     void showNotes(){base("Short Notes",false);content.addView(tv("Revision made simple",22,DARK,true));card("Photosynthesis","Light energy → chemical energy • Key points & diagram","Open",v->noteDialog("Photosynthesis","Occurs in chloroplasts. Requires light, CO₂ and H₂O."));card("Chemical Bonding","Quick revision • VSEPR • Hybridisation","Open",v->noteDialog("Chemical Bonding","Use electron-pair geometry to predict molecular shape."));card("Human Physiology","High-yield facts","Open",v->noteDialog("Human Physiology","Heart, breathing, digestion and excretion — revise with diagrams."));}
-     void noteDialog(String t,String body){new AlertDialog.Builder(this).setTitle(t).setMessage(body+"\n\n✓ Quick Revision\n✓ Important Facts\n✓ Exam Tips").setPositiveButton("Done",null).show();}
-     void showProgress(){base("Progress Report",false);content.addView(tv("Overall Progress",22,DARK,true));card("42% Complete","78 / 1830 Questions","View Trend",v->{});card("Physics","60% • Improving","",v->{});card("Chemistry","55% • Improve","",v->{});card("Biology","82% • Strong","",v->{});content.addView(tv("Your Performance Trend",18,DARK,true));TextView chart=tv("▁▂▃▂▄▅▆▇\nApr 20     Apr 27     May 4     May 11",22,GREEN,true);chart.setGravity(17);content.addView(chart,new LinearLayout.LayoutParams(-1,dp(100)));}
-    void showProfile(){base("Profile",false);content.addView(tv("👤  Aarav Sharma",23,DARK,true));content.addView(tv("NEET 2026 Aspirant • Level 5 • 1,250 XP",13,MUTED,false));card("My Performance","7 Day Streak • 18 Tests Taken • 65% Avg Accuracy","Open",v->showProgress());card("Test History","Recent mock tests and scores","Open",v->showResult());card("Premium","Unlock full potential with CrackNEET Pro","₹99/month",v->showPremium());card("Settings","Notifications • Theme • Account","Open",v->{});card("Help & Support","FAQs and feedback","Open",v->{});}
-    void showPremium(){base("Go Premium",true);content.addView(tv("👑  CrackNEET Pro",28,DARK,true));content.addView(tv("₹99 / month",26,GREEN,true));content.addView(tv("Unlock your full potential",15,MUTED,false));String[] a={"Premium Test Series","Complete Short Notes","Advanced Analytics","All India Ranking","Personalized Weak Topic Suggestions"};for(String x:a)content.addView(tv("✓  "+x,15,TEXT,false));Button b=btn("Subscribe Now");b.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Premium").setMessage("Subscription flow is ready for integration with Play Billing.").setPositiveButton("OK",null).show());content.addView(b);}
-    void showDrawer(){new AlertDialog.Builder(this).setTitle("CrackNEET").setItems(new String[]{"Home","Tests","Short Notes","Progress","Profile","Premium","Settings","Help & Support","Logout"},(d,w)->{if(w==0)showDashboard();else if(w==1)showSubjects();else if(w==2)showNotes();else if(w==3)showProgress();else if(w==4)showProfile();else if(w==5)showPremium();});}
+    int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
+    TextView tv(String s,float z,int c,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(z);t.setTextColor(c);t.setTypeface(null,bold?1:0);t.setPadding(0,dp(5),0,dp(5));return t;}
+    GradientDrawable bg(int c,float r){GradientDrawable g=new GradientDrawable();g.setColor(c);g.setCornerRadius(dp((int)r));return g;}
+    LinearLayout box(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);l.setPadding(dp(16),dp(12),dp(16),dp(12));return l;}
+    Button btn(String s){Button b=new Button(this);b.setText(s);b.setTextSize(14);b.setTextColor(Color.WHITE);b.setAllCaps(false);b.setTypeface(null,1);b.setBackground(bg(GREEN,14));return b;}
+
+    void showSplash(){
+        root.removeAllViews(); LinearLayout l=box(); l.setGravity(Gravity.CENTER); l.setBackgroundColor(DARK);
+        TextView a=tv("CRACKNEET",34,Color.WHITE,true);a.setGravity(Gravity.CENTER);l.addView(a,new LinearLayout.LayoutParams(-1,dp(90)));
+        TextView b=tv("NEET • JEE MAIN",15,Color.LTGRAY,false);b.setGravity(Gravity.CENTER);l.addView(b);
+        root.addView(l); new Handler().postDelayed(new Runnable(){public void run(){showWelcome();}},900);
+    }
+    void showWelcome(){
+        root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER_HORIZONTAL);l.setPadding(dp(24),dp(30),dp(24),dp(24));
+        TextView logo=tv("CRACKNEET",30,DARK,true);logo.setGravity(Gravity.CENTER);l.addView(logo,new LinearLayout.LayoutParams(-1,dp(80)));
+        l.addView(tv("Welcome Back!",22,TEXT,true));l.addView(tv("Your NEET preparation companion",14,MUTED,false));
+        EditText email=new EditText(this);email.setHint("Email or Mobile Number");l.addView(email,new LinearLayout.LayoutParams(-1,dp(58)));
+        EditText pass=new EditText(this);pass.setHint("Password");pass.setInputType(129);l.addView(pass,new LinearLayout.LayoutParams(-1,dp(58)));
+        Button login=btn("Login");login.setOnClickListener(v->showDashboard());l.addView(login,new LinearLayout.LayoutParams(-1,dp(52)));
+        Button guest=btn("Continue as Guest");guest.setOnClickListener(v->showDashboard());l.addView(guest,new LinearLayout.LayoutParams(-1,dp(52)));
+        l.addView(tv("Don't have an account?  Sign Up",13,GREEN,true));root.addView(l);
+    }
+    void base(String title,boolean back){
+        root.removeAllViews();LinearLayout frame=new LinearLayout(this);frame.setOrientation(LinearLayout.VERTICAL);frame.setBackgroundColor(BG);
+        LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);
+        if(back){Button b=btn("‹");b.setTextColor(DARK);b.setBackgroundColor(Color.TRANSPARENT);b.setOnClickListener(v->showDashboard());top.addView(b,new LinearLayout.LayoutParams(dp(48),dp(52)));}
+        TextView h=tv(title,21,DARK,true);top.addView(h,new LinearLayout.LayoutParams(0,dp(52),1));
+        Button m=btn("☰");m.setTextColor(DARK);m.setBackgroundColor(Color.TRANSPARENT);m.setOnClickListener(v->showDrawer());top.addView(m,new LinearLayout.LayoutParams(dp(52),dp(52)));
+        frame.addView(top);ScrollView sc=new ScrollView(this);content=box();sc.addView(content);frame.addView(sc,new LinearLayout.LayoutParams(-1,0,1));
+        addBottom(frame);root.addView(frame);
+    }
+    void addBottom(LinearLayout frame){
+        LinearLayout nav=new LinearLayout(this);nav.setGravity(Gravity.CENTER);nav.setBackgroundColor(Color.WHITE);
+        String[] names={"Home","Tests","Notes","Progress","Profile"};
+        for(final String n:names){Button b=btn(n);b.setTextSize(11);b.setTextColor(MUTED);b.setBackgroundColor(Color.TRANSPARENT);
+            b.setOnClickListener(v->{if(n.equals("Home"))showDashboard();else if(n.equals("Tests"))showSubjects();else if(n.equals("Notes"))showNotes();else if(n.equals("Progress"))showProgress();else showProfile();});
+            nav.addView(b,new LinearLayout.LayoutParams(0,dp(56),1));}frame.addView(nav);
+    }
+    void card(String title,String sub,String action,View.OnClickListener click){
+        LinearLayout c=box();c.setBackground(bg(Color.WHITE,16));c.setPadding(dp(14),dp(10),dp(14),dp(10));
+        TextView t=tv(title,17,DARK,true);c.addView(t);c.addView(tv(sub,13,MUTED,false));
+        if(action.length()>0){Button b=btn(action);b.setTextSize(12);b.setOnClickListener(click);c.addView(b,new LinearLayout.LayoutParams(-2,dp(42)));}
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(118));p.setMargins(0,dp(8),0,dp(8));content.addView(c,p);
+    }
+    void showDashboard(){
+        base("CrackNEET",false);content.addView(tv("Good Morning 👋",24,DARK,true));content.addView(tv("Keep going. Your hard work will pay off.",14,MUTED,false));
+        card("Today's Target","3 / 10 Chapters completed","Continue",v->showSubjects());
+        card("NEET Mock Tests","Full syllabus • Chapter tests • PYQ","Start Test",v->showSubjects());
+        card("JEE Main PYQ","Physics • Chemistry • Mathematics","Practice",v->{exam="JEE Main";showSubjects();});
+        card("40,000+ Question Bank","PYQ + PYQ Based + Mixed + Advanced Types","Explore",v->showSubjects());
+    }
+    void showSubjects(){
+        base(exam+" Tests",true);content.addView(tv("Choose your subject",22,DARK,true));
+        String[][] d=exam.equals("JEE Main")?new String[][]{{"Physics","PYQ + Practice"},{"Chemistry","PYQ + Practice"},{"Mathematics","PYQ + Practice"}}:new String[][]{{"Physics","12 Chapters"},{"Chemistry","14 Chapters"},{"Biology","16 Chapters"}};
+        for(String[] x:d){final String s=x[0];card(s,x[1]+" • Tests • Notes","Open",v->showChapters(s));}
+    }
+    void showChapters(String subject){
+        base(subject,true);content.addView(tv("Chapter-wise Practice",22,DARK,true));
+        String[] ch=subject.equals("Biology")?new String[]{"Cell: The Unit of Life","Human Physiology","Genetics","Ecology","Plant Physiology"}:subject.equals("Physics")?new String[]{"Kinematics","Laws of Motion","Work Energy Power","Current Electricity","Optics","Modern Physics"}:subject.equals("Chemistry")?new String[]{"Mole Concept","Atomic Structure","Chemical Bonding","Thermodynamics","Equilibrium","Electrochemistry","Organic Chemistry"}:new String[]{"Quadratic Equations","Matrices","Sequence & Series","Differential Calculus","Probability"};
+        int i=1;for(final String c:ch){card(i+++". "+c,"PYQ • PYQ Based • Mixed • Assertion/Reason","Start Test",v->startInstructions());}
+    }
+    void startInstructions(){
+        base("Test Instructions",true);content.addView(tv(exam+" • Mixed Test",22,DARK,true));content.addView(tv("PYQ + PYQ Based + Original Practice",14,MUTED,false));
+        card("Question Types","MCQ • Assertion-Reason • Statement Based • Match the Column • Numerical","Choose Time",v->chooseTime());
+    }
+    void chooseTime(){
+        final String[] labels={"30 minutes","60 minutes","90 minutes"};final long[] times={30,60,90};RadioGroup rg=new RadioGroup(this);
+        for(String x:labels){RadioButton r=new RadioButton(this);r.setText(x);r.setTextSize(16);rg.addView(r);}((RadioButton)rg.getChildAt(0)).setChecked(true);
+        new AlertDialog.Builder(this).setTitle("Select Test Duration").setMessage("Choose your test timing").setView(rg).setNegativeButton("Cancel",null).setPositiveButton("OK",(d,w)->{int id=rg.getCheckedRadioButtonId();int p=0;for(int i=0;i<rg.getChildCount();i++)if(rg.getChildAt(i).getId()==id)p=i;duration=times[p];startTest();}).show();
+    }
+    void startTest(){
+        test.clear();for(Question q:bank)if(q.exam.equals(exam))test.add(q);Collections.shuffle(test);if(test.size()>30)test=new ArrayList<Question>(test.subList(0,30));
+        qIndex=0;score=0;answers.clear();marked.clear();showQuestion();
+    }
+    void showQuestion(){
+        base("Question "+(qIndex+1)+" / "+test.size(),true);if(test.size()==0){content.addView(tv("No questions available.",18,DARK,true));return;}
+        Question q=test.get(qIndex);content.addView(tv(q.subject+" • "+q.chapter+" • "+q.type,12,GREEN,true));content.addView(tv(q.text,19,TEXT,true));
+        final RadioGroup rg=new RadioGroup(this);for(String o:q.options){RadioButton r=new RadioButton(this);r.setText(o);r.setTextSize(15);r.setPadding(dp(4),dp(8),dp(4),dp(8));rg.addView(r);}content.addView(rg);
+        Button mark=btn(marked.contains(qIndex)?"★ Marked":"☆ Mark for Review");mark.setOnClickListener(v->{if(marked.contains(qIndex))marked.remove((Integer)qIndex);else marked.add(qIndex);showQuestion();});content.addView(mark);
+        Button next=btn(qIndex==test.size()-1?"Finish Test":"Next →");next.setOnClickListener(v->{int id=rg.getCheckedRadioButtonId();int chosen=-1;if(id!=-1)for(int i=0;i<rg.getChildCount();i++)if(rg.getChildAt(i).getId()==id)chosen=i;answers.add(chosen);if(chosen==q.answer)score++;qIndex++;if(qIndex>=test.size())showResult();else showQuestion();});content.addView(next);
+        Button pal=btn("Question Palette");pal.setOnClickListener(v->showPalette());content.addView(pal);
+    }
+    void showPalette(){
+        StringBuilder s=new StringBuilder();for(int i=0;i<test.size();i++)s.append(i+1).append(answers.size()>i&&answers.get(i)>=0?" ✓":" ○").append(marked.contains(i)?" ★":"").append(i%5==4?"\n":"   ");
+        new AlertDialog.Builder(this).setTitle("Question Palette").setMessage(s.toString()).setPositiveButton("Close",null).show();
+    }
+    void showResult(){
+        base("Test Result",true);int accuracy=test.size()==0?0:score*100/test.size();content.addView(tv(accuracy+"% Accuracy",30,GREEN,true));
+        card("Score",score+" / "+test.size(),"View Analysis",v->showProgress());card("Question Types","PYQ • PYQ Based • Mixed • Advanced","Review",v->showPalette());
+        Button again=btn("Retake Test");again.setOnClickListener(v->startTest());content.addView(again);
+    }
+    void showNotes(){base("Short Notes",false);card("Biology","NCERT high-yield revision","Open",v->note("Biology Notes"));card("Chemistry","Reactions • Concepts • Formulae","Open",v->note("Chemistry Notes"));card("Physics","Formula sheet • Concepts","Open",v->note("Physics Notes"));}
+    void note(String t){new AlertDialog.Builder(this).setTitle(t).setMessage("High-yield concepts, important facts, formulas and exam tips.").setPositiveButton("Done",null).show();}
+    void showProgress(){base("Progress Report",false);card("Overall","Questions attempted • Accuracy • Tests","View",v->{});card("Physics","Improving • Track weak chapters","",v->{});card("Chemistry","Practice more difficult topics","",v->{});card("Biology","Strong performance","",v->{});}
+    void showProfile(){base("Profile",false);content.addView(tv("NEET Aspirant",24,DARK,true));card("Test History","Mock tests and scores","Open",v->showResult());card("Premium","Unlock complete test series and analytics","₹99/month",v->showPremium());card("Settings","Notifications • Theme • Account","Open",v->{});}
+    void showPremium(){base("CrackNEET Pro",true);content.addView(tv("Premium Preparation",26,DARK,true));content.addView(tv("₹99 / month",24,GREEN,true));card("Premium Tests","Full mock + chapter tests","Unlock",v->{});card("Advanced Analytics","Weak topics + performance trend","Unlock",v->{});}
+    void showDrawer(){final String[] items={"Home","Tests","Notes","Progress","Profile","Premium"};new AlertDialog.Builder(this).setTitle("CrackNEET").setItems(items,(d,w)->{if(w==0)showDashboard();else if(w==1)showSubjects();else if(w==2)showNotes();else if(w==3)showProgress();else if(w==4)showProfile();else showPremium();}).show();}
     @Override public void onBackPressed(){showDashboard();}
 
-    static class QuestionBank {
-        static ArrayList<Question> generate40000(){ArrayList<Question> a=new ArrayList<>(40000);for(int i=0;i<40000;i++){if(i<20000)a.add(neet(i));else a.add(jee(i-20000));}return a;}
-        static Question neet(int i){int s=i%10,v=i/10+2;String id="N"+String.format(Locale.US,"%05d",i+1);if(i%4==0)return bio(id,i,s,v);if(i%4==1)return phy(id,i,s,v);return chem(id,i,s,v);}
-        static Question jee(int i){int s=i%10,v=i/10+3;String id="J"+String.format(Locale.US,"%05d",i+1);if(i%3==0)return math(id,i,s,v);if(i%3==1)return phy(id,i,s,v);return chemJ(id,i,s,v);}
-        static Question bio(String id,int i,int s,int v){int t=s%5;if(t==0)return q(id,"NEET","Biology","Cell: The Unit of Life","MCQ","Easy","Which organelle is primarily associated with ATP production?","Mitochondrion","Ribosome","Golgi apparatus","Lysosome",0,"Mitochondria generate most cellular ATP.");if(t==1)return q(id,"NEET","Biology","Genetics","MCQ","Moderate","If a heterozygous tall plant (Tt) is crossed with Tt, the probability of tt is:","1/4","1/2","3/4","1",0,"The genotype ratio is 1:2:1.");if(t==2)return q(id,"NEET","Biology","Human Physiology","MCQ","Easy","The chamber that pumps oxygenated blood into the aorta is:","Left ventricle","Right ventricle","Left atrium","Right atrium",0,"The left ventricle pumps into the aorta.");if(t==3)return q(id,"NEET","Biology","Plant Physiology","MCQ","Easy","The primary photosynthetic pigment is:","Chlorophyll a","Chlorophyll b","Carotene","Xanthophyll",0,"Chlorophyll a is the primary reaction-centre pigment.");return q(id,"NEET","Biology","Ecology","MCQ","Easy","The first trophic level is occupied by:","Producers","Herbivores","Carnivores","Decomposers",0,"Green plants and other autotrophs form the first trophic level.");}
-        static Question phy(String id,int i,int s,int v){int t=s%5;if(t==0)return q(id,"NEET","Physics","Current Electricity","Numerical","Easy","A "+v+" Ω resistor is connected to "+(2*v)+" V. Current is:","2 A","1 A","4 A","0.5 A",0,"I=V/R.");if(t==1)return q(id,"NEET","Physics","Kinematics","Numerical","Easy","A body starts from rest with acceleration "+v+" m/s² for 2 s. Final speed is:",""+(2*v)+" m/s",""+v+" m/s",""+(v*v)+" m/s",""+(v+2)+" m/s",0,"v=u+at.");if(t==2)return q(id,"NEET","Physics","Work Energy Power","Numerical","Easy","A force of "+v+" N moves an object "+v+" m along the force. Work is:",""+(v*v)+" J",""+(2*v)+" J",""+v+" J",""+(v+1)+" J",0,"W=Fs.");if(t==3)return q(id,"NEET","Physics","Optics","MCQ","Moderate","The SI unit of lens power is:","Dioptre","Metre","Candela","Newton",0,"Lens power is measured in dioptres.");return q(id,"NEET","Physics","Modern Physics","MCQ","Easy","Photon energy is proportional to its:","Frequency","Mass only","Charge","Volume",0,"E=hf.");}
-        static Question chem(String id,int i,int s,int v){int t=s%5;if(t==0)return q(id,"NEET","Chemistry","Mole Concept","Numerical","Easy","Number of particles in 1 mole is approximately:","6.022×10²³","3.011×10²³","9.8×10²³","1.602×10⁻¹⁹",0,"Avogadro constant.");if(t==1)return q(id,"NEET","Chemistry","Atomic Structure","MCQ","Easy","Maximum electrons in shell n=2 are:","8","2","18","32",0,"2n² gives 8.");if(t==2)return q(id,"NEET","Chemistry","Chemical Bonding","MCQ","Easy","BF₃ has which geometry?","Trigonal planar","Tetrahedral","Linear","Bent",0,"BF₃ is trigonal planar.");if(t==3)return q(id,"NEET","Chemistry","Thermodynamics","MCQ","Moderate","For an exothermic reaction ΔH is generally:","Negative","Positive","Zero","Infinite",0,"Heat is released.");return q(id,"NEET","Chemistry","Electrochemistry","Numerical","Easy","If E°cathode=1.2 V and E°anode=0.3 V, E°cell is:","0.9 V","1.5 V","-0.9 V","0.3 V",0,"E°cell=E°cathode-E°anode.");}
-        static Question math(String id,int i,int s,int v){int t=s%5;if(t==0)return q(id,"JEE Main","Mathematics","Quadratic Equations","MCQ","Easy","The sum of roots of x²-"+(v+5)+"x+"+(v*2)+"=0 is:",""+(v+5),""+v,""+(v+2),""+(v*2),0,"For x²+bx+c, sum of roots is -b.");if(t==1)return q(id,"JEE Main","Mathematics","Sequence & Series","Numerical","Easy","The next term after "+v+", "+(v+2)+", "+(v+4)+" is:",""+(v+6),""+(v+5),""+(v+8),""+(v*2),0,"It is an arithmetic progression.");if(t==2)return q(id,"JEE Main","Mathematics","Differential Calculus","MCQ","Easy","d(x^"+v+")/dx equals:",""+v+"x^"+(v-1),""+(v-1)+"x^"+v,"x^"+v,""+v,0,"Power rule.");if(t==3)return q(id,"JEE Main","Mathematics","Matrices","MCQ","Easy","For square matrices A and B, det(AB) equals:","det(A)det(B)","det(A)+det(B)","det(A)-det(B)","0 always",0,"Determinants are multiplicative.");return q(id,"JEE Main","Mathematics","Probability","MCQ","Easy","A fair coin is tossed once. Probability of head is:","1/2","1/4","1","0",0,"Two equally likely outcomes.");}
-        static Question chemJ(String id,int i,int s,int v){return q(id,"JEE Main","Chemistry",s%2==0?"Organic Chemistry":"Physical Chemistry","MCQ","Moderate",s%2==0?"The functional group of an alcohol is:":"At constant temperature, pressure and volume of an ideal gas are related by:",s%2==0?"-OH":"Boyle's law","-COOH","-CHO","-NH₂",0,s%2==0?"Alcohols contain hydroxyl groups.":"For fixed temperature, PV is constant.");}
-        static Question q(String id,String e,String sub,String ch,String type,String diff,String text,String a,String b,String c,String d,int ans,String sol){return new Question(id,e,sub,ch,type,diff,text,new String[]{a,b,c,d},ans,sol);}
-        static String[] types={"PYQ","PYQ Based","Mixed","Assertion-Reason","Statement Based","Match the Column","Multiple Correct","Numerical"};
+    static class QuestionBank{
+        static ArrayList<Question> generate40000(){ArrayList<Question>a=new ArrayList<Question>(40000);for(int i=0;i<40000;i++)a.add(make(i));return a;}
+        static Question make(int i){boolean neet=i<20000;String e=neet?"NEET":"JEE Main";int n=i+1;String id=(neet?"N":"J")+String.format(Locale.US,"%05d",n);String sub;if(neet)sub=new String[]{"Biology","Physics","Chemistry"}[i%3];else sub=new String[]{"Mathematics","Physics","Chemistry"}[i%3];String ch=sub.equals("Biology")?"Genetics":sub.equals("Physics")?"Current Electricity":sub.equals("Chemistry")?"Chemical Bonding":sub.equals("Mathematics")?"Quadratic Equations":"Physics";String[] types={"PYQ Based","Mixed","Assertion-Reason","Statement Based","Match the Column","MCQ","Numerical"};String type=types[i%types.length];int v=i%20+2;
+            String q="Practice question "+n+": In "+ch+", which statement is most appropriate for exam preparation?";String a="Option A is correct",b="Option B",c="Option C",d="Option D";if(i%5==0){q="A "+v+" ohm resistor is connected to "+(2*v)+" V. The current is:";a="2 A";b="1 A";c="4 A";d="0.5 A";ch="Current Electricity";sub="Physics";}else if(i%5==1){q="In a Tt × Tt cross, probability of tt is:";a="1/4";b="1/2";c="3/4";d="1";ch="Genetics";sub="Biology";}else if(i%5==2){q="BF3 has which molecular geometry?";a="Trigonal planar";b="Tetrahedral";c="Linear";d="Bent";ch="Chemical Bonding";sub="Chemistry";}else if(i%5==3){q="The sum of roots of x² - "+(v+5)+"x + "+(v*2)+" = 0 is:";a=""+(v+5);b=""+v;c=""+(v+2);d=""+(v*2);ch="Quadratic Equations";sub="Mathematics";}return new Question(id,e,sub,ch,type,i%3==0?"Easy":"Moderate",q,new String[]{a,b,c,d},0,"Correct answer: Option A. Review the chapter concept and practice related PYQ-based questions.");}
     }
 }
