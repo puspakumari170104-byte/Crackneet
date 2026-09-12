@@ -337,6 +337,13 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
     void showNcertCorner(){
         base("NCERT Question Practice",true);
         content.addView(tv("📖 NCERT Question Practice Corner",23,DARK,true));
+        content.addView(tv("🎯 Line-by-line • NEET probability focused • Chapter-wise",13,MUTED,false));
+        content.addView(tv("Choose one subject",15,DARK,true));
+        LinearLayout s1=new LinearLayout(this); s1.setGravity(Gravity.CENTER);
+        miniCard(s1,"⚛️","Physics","NCERT Tests",v->showNcertChapter("Class 11","Physics"));
+        miniCard(s1,"🧪","Chemistry","NCERT Tests",v->showNcertChapter("Class 11","Chemistry"));
+        miniCard(s1,"🧬","Biology","NCERT Tests",v->showNcertChapter("Class 11","Biology"));
+        content.addView(s1);
         content.addView(tv("NCERT concepts → NEET-pattern MCQs → fresh data variations",13,MUTED,false));
         card("Class 11 Biology","Chapter-wise NCERT concept practice • 45-question tests","Start Practice",v->showNcertChapter("Class 11","Biology"));
         card("Class 12 Biology","NCERT line/concept based NEET practice","Start Practice",v->showNcertChapter("Class 12","Biology"));
@@ -351,11 +358,16 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         String[] chapters;
         if(cls.equals("Class 11") && subject.equals("Biology")) chapters=new String[]{"The Living World","Biological Classification","Plant Kingdom","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Structural Organisation in Animals","Cell: The Unit of Life","Biomolecules","Cell Cycle and Cell Division","Transport in Plants","Mineral Nutrition","Photosynthesis in Higher Plants","Respiration in Plants","Plant Growth and Development","Digestion and Absorption","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and their Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration"};
         else if(cls.equals("Class 12") && subject.equals("Biology")) chapters=new String[]{"Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation","Environmental Issues"};
-        else chapters=new String[]{"Units and Measurements","Motion / Kinematics","Laws of Motion","Work, Energy and Power","Thermodynamics","Equilibrium","Chemical Bonding","Electrochemistry","Chemical Kinetics","Organic Chemistry"};
+        else if(subject.equals("Chemistry")) chapters=new String[]{"Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","Thermodynamics","Equilibrium","Redox Reactions","Organic Chemistry: Basic Principles","Hydrocarbons"};
+        else chapters=new String[]{"Units and Measurements","Motion in a Straight Line","Motion in a Plane","Laws of Motion","Work, Energy and Power","System of Particles and Rotational Motion","Gravitation","Mechanical Properties of Solids","Mechanical Properties of Fluids","Thermal Properties of Matter","Thermodynamics","Kinetic Theory","Oscillations","Waves"};
         for(final String ch:chapters) card(ch,"NCERT concept + NEET-pattern questions","Practice",v->startNcertSampleTest());
     }
     void startNcertSampleTest(){
         ArrayList<Question> n=new ArrayList<Question>();
+        n.add(new Question("NCERT-LINE-001","NEET","Biology","Cell: The Unit of Life","NCERT Line Focus","High","A cell membrane that permits some substances to pass through while restricting others is best described as:",new String[]{"Selectively permeable","Completely impermeable","Non-living rigid barrier","Permeable to all substances"},0,"This tests the NCERT concept of selective permeability of the plasma membrane."));
+        n.add(new Question("NCERT-LINE-002","NEET","Biology","Human Reproduction","NCERT Line Focus","High","According to NCERT, the usual site of fertilisation in humans is:",new String[]{"Ampullary-isthmic junction","Uterus","Cervix","Vagina"},0,"The ampullary-isthmic junction of the oviduct is the usual site of fertilisation."));
+        n.add(new Question("NCERT-LINE-003","NEET","Physics","Units and Measurements","NCERT Line Focus","High","If a measured quantity has dimensions [L T^-1], it represents:",new String[]{"Velocity","Acceleration","Force","Energy"},0,"[L T^-1] is the dimensional formula of velocity."));
+        n.add(new Question("NCERT-LINE-004","NEET","Chemistry","Some Basic Concepts of Chemistry","NCERT Line Focus","High","The number of entities present in one mole of a substance is approximately:",new String[]{"6.022 × 10^23","6.022 × 10^20","9.8 × 10^23","3.14 × 10^23"},0,"One mole contains Avogadro's number of entities."));
         n.add(new Question("NCERT-001","NEET","Biology","Cell: The Unit of Life","NCERT Based","Easy","Which structure is primarily responsible for controlling the movement of substances into and out of a cell?",new String[]{"Plasma membrane","Cell wall","Nucleolus","Ribosome"},0,"The plasma membrane is selectively permeable and regulates movement of substances across the cell boundary."));
         n.add(new Question("NCERT-002","NEET","Biology","Biomolecules","Moderate","Which class of biomolecules includes enzymes in most biological systems?",new String[]{"Proteins","Lipids","Minerals","Nucleic acids only"},0,"Most enzymes are proteins; they act as biological catalysts."));
         n.add(new Question("NCERT-003","NEET","Biology","Cell Cycle and Cell Division","Moderate","If a diploid cell has 20 chromosomes, the number of chromosomes in each daughter cell after mitosis is:",new String[]{"20","10","40","5"},0,"Mitosis maintains chromosome number, so each daughter cell retains 20 chromosomes."));
