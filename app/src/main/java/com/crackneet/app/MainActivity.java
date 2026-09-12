@@ -178,12 +178,12 @@ void showSubjects(){
     void startTest(){
         final String selectedExam=exam;
         new Thread(() -> {
-            ArrayList<Question> remote=fetchRemoteQuestions(selectedExam,30);
+            ArrayList<Question> remote=fetchRemoteQuestions(selectedExam,45);
             runOnUiThread(() -> {
                 test.clear();
                 if(remote.size()>0) test.addAll(remote);
                 else for(Question q:bank) if(q.exam.equals(selectedExam)) test.add(q);
-                Collections.shuffle(test); if(test.size()>30) test=new ArrayList<Question>(test.subList(0,30));
+                Collections.shuffle(test); if(test.size()>45) test=new ArrayList<Question>(test.subList(0,45));
                 qIndex=0;score=0;answers.clear();marked.clear();showQuestion();
             });
         }).start();
