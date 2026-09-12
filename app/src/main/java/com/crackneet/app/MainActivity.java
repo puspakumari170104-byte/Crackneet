@@ -14,7 +14,7 @@ import org.json.*;
 public class MainActivity extends Activity {
     static final String API_BASE="https://crackneet-api.onrender.com";
     static final int GREEN=Color.rgb(0,170,118), DARK=Color.rgb(15,38,48), TEXT=Color.rgb(35,52,62), MUTED=Color.rgb(102,119,126), BG=Color.rgb(245,248,247);
-    FrameLayout root; LinearLayout content; String exam="NEET"; int qIndex=0,score=0; long duration=30; long remainingSeconds=0; CountDownTimer timer;
+    FrameLayout root; LinearLayout content; String exam="NEET"; long userId=-1; String authToken=""; int qIndex=0,score=0; long duration=30; long remainingSeconds=0; CountDownTimer timer;
     ArrayList<Question> bank=new ArrayList<Question>(), test=new ArrayList<Question>(); ArrayList<Integer> answers=new ArrayList<Integer>(), marked=new ArrayList<Integer>();
 
     static class Question {
@@ -26,8 +26,11 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b); setContentView(R.layout.activity_main); root=findViewById(R.id.root);
-        showSplash(); bank=QuestionBank.generate40000();
+        loadSession(); showSplash(); bank=QuestionBank.generate40000();
     }
+    void loadSession(){ android.content.SharedPreferences p=getSharedPreferences("crackneet_session",MODE_PRIVATE); userId=p.getLong("userId",-1); authToken=p.getString("token",""); }
+    void saveSession(long id,String token){ userId=id; authToken=token; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putLong("userId",id).putString("token",token).apply(); }
+    void clearSession(){ userId=-1; authToken=""; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().clear().apply(); }
     int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
     TextView tv(String s,float z,int c,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(z);t.setTextColor(c);t.setTypeface(null,bold?1:0);t.setPadding(0,dp(5),0,dp(5));return t;}
     GradientDrawable bg(int c,float r){GradientDrawable g=new GradientDrawable();g.setColor(c);g.setCornerRadius(dp((int)r));return g;}
@@ -54,13 +57,53 @@ public class MainActivity extends Activity {
         EditText email=new EditText(this);email.setHint("  Email or Mobile Number");email.setTextColor(TEXT);email.setHintTextColor(MUTED);email.setBackground(bg(Color.WHITE,14));LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,dp(56));ep.setMargins(0,dp(10),0,dp(6));l.addView(email,ep);
         EditText pass=new EditText(this);pass.setHint("  Password");pass.setTextColor(TEXT);pass.setHintTextColor(MUTED);pass.setInputType(129);pass.setBackground(bg(Color.WHITE,14));l.addView(pass,new LinearLayout.LayoutParams(-1,dp(56)));
         TextView forgot=tv("Forgot Password?",12,GREEN,true);forgot.setGravity(Gravity.RIGHT);l.addView(forgot);
-        Button login=btn("Login");login.setOnClickListener(v->showDashboard());l.addView(login,new LinearLayout.LayoutParams(-1,dp(52)));
+        Button login=btn("Login");login.setOnClickListener(v->login(email.getText().toString().trim(),pass.getText().toString()));l.addView(login,new LinearLayout.LayoutParams(-1,dp(52)));
         TextView or=tv("──────────  OR  ──────────",12,MUTED,false);or.setGravity(Gravity.CENTER);l.addView(or,new LinearLayout.LayoutParams(-1,dp(44)));
-        Button google=btn("Continue with Google");google.setTextColor(TEXT);google.setBackground(bg(Color.WHITE,14));google.setOnClickListener(v->showDashboard());l.addView(google,new LinearLayout.LayoutParams(-1,dp(48)));
-        Button apple=btn("Continue with Apple");apple.setTextColor(TEXT);apple.setBackground(bg(Color.WHITE,14));apple.setOnClickListener(v->showDashboard());l.addView(apple,new LinearLayout.LayoutParams(-1,dp(48)));
-        TextView signup=tv("Don't have an account?  Sign Up",12,GREEN,true);signup.setGravity(Gravity.CENTER);l.addView(signup);
+        TextView signup=tv("Don't have an account?  Sign Up",12,GREEN,true);signup.setGravity(Gravity.CENTER);signup.setOnClickListener(v->showSignup());l.addView(signup);
         root.addView(l);
     }
+    void login(final String email,final String password){
+        if(email.length()==0||password.length()<8){Toast.makeText(this,"Enter a valid email and password (8+ characters).",Toast.LENGTH_SHORT).show();return;}
+        new Thread(() -> {
+            try{
+                HttpURLConnection con=(HttpURLConnection)new URL(API_BASE+"/api/auth/login").openConnection();
+                con.setRequestMethod("POST"); con.setDoOutput(true); con.setRequestProperty("Content-Type","application/json");
+                JSONObject body=new JSONObject(); body.put("email",email); body.put("password",password);
+                OutputStream os=con.getOutputStream();os.write(body.toString().getBytes("UTF-8"));os.close();
+                int code=con.getResponseCode(); InputStream is=code>=400?con.getErrorStream():con.getInputStream();
+                BufferedReader br=new BufferedReader(new InputStreamReader(is));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();
+                JSONObject out=new JSONObject(sb.toString());
+                if(code!=200)throw new Exception(out.optString("error","Login failed"));
+                JSONObject u=out.getJSONObject("user"); saveSession(u.getLong("id"),out.getString("token"));
+                runOnUiThread(()->showDashboard());
+            }catch(Exception e){runOnUiThread(()->Toast.makeText(this,e.getMessage()==null?"Login failed":e.getMessage(),Toast.LENGTH_LONG).show());}
+        }).start();
+    }
+    void showSignup(){
+        final LinearLayout l=box(); l.setPadding(dp(26),dp(28),dp(26),dp(22)); l.setBackgroundResource(R.drawable.app_background);
+        l.addView(tv("Create your CrackNEET account",22,DARK,true));
+        final EditText name=new EditText(this);name.setHint("Name");l.addView(name);
+        final EditText email=new EditText(this);email.setHint("Email");email.setInputType(33);l.addView(email);
+        final EditText pass=new EditText(this);pass.setHint("Password (8+ characters)");pass.setInputType(129);l.addView(pass);
+        Button create=btn("Create account");create.setOnClickListener(v->register(name.getText().toString().trim(),email.getText().toString().trim(),pass.getText().toString()));l.addView(create,new LinearLayout.LayoutParams(-1,dp(52)));
+        TextView back=tv("Back to Login",13,GREEN,true);back.setGravity(Gravity.CENTER);back.setOnClickListener(v->showWelcome());l.addView(back);
+        root.removeAllViews();root.addView(l);
+    }
+    void register(final String name,final String email,final String password){
+        if(name.length()<2||email.length()<5||password.length()<8){Toast.makeText(this,"Enter name, email and an 8+ character password.",Toast.LENGTH_SHORT).show();return;}
+        new Thread(() -> {
+            try{
+                HttpURLConnection con=(HttpURLConnection)new URL(API_BASE+"/api/auth/register").openConnection();
+                con.setRequestMethod("POST");con.setDoOutput(true);con.setRequestProperty("Content-Type","application/json");
+                JSONObject body=new JSONObject();body.put("name",name);body.put("email",email);body.put("password",password);
+                OutputStream os=con.getOutputStream();os.write(body.toString().getBytes("UTF-8"));os.close();
+                int code=con.getResponseCode();InputStream is=code>=400?con.getErrorStream():con.getInputStream();BufferedReader br=new BufferedReader(new InputStreamReader(is));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();
+                JSONObject out=new JSONObject(sb.toString());if(code!=201)throw new Exception(out.optString("error","Registration failed"));
+                JSONObject u=out.getJSONObject("user");saveSession(u.getLong("id"),out.getString("token"));runOnUiThread(()->showDashboard());
+            }catch(Exception e){runOnUiThread(()->Toast.makeText(this,e.getMessage()==null?"Registration failed":e.getMessage(),Toast.LENGTH_LONG).show());}
+        }).start();
+    }
+
     void base(String title,boolean back){
         root.removeAllViews();LinearLayout frame=new LinearLayout(this);frame.setOrientation(LinearLayout.VERTICAL);frame.setBackgroundResource(R.drawable.app_background);
         LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(dp(4),dp(4),dp(4),0);
@@ -166,8 +209,8 @@ void showSubjects(){
         new Thread(() -> {
             HttpURLConnection con=null;
             try{
-                con=(HttpURLConnection)new URL(API_BASE+"/api/tests/submit").openConnection(); con.setRequestMethod("POST"); con.setDoOutput(true); con.setRequestProperty("Content-Type","application/json"); con.setConnectTimeout(8000); con.setReadTimeout(10000);
-                JSONObject body=new JSONObject(); body.put("userId",JSONObject.NULL); body.put("exam",exam); body.put("score",finalScore); body.put("total",total); body.put("correct",finalScore); body.put("wrong",finalWrong); body.put("skipped",finalSkipped); body.put("durationSeconds",Math.max(0,(int)(duration*60-remainingSeconds)));
+                con=(HttpURLConnection)new URL(API_BASE+"/api/tests/submit").openConnection(); con.setRequestMethod("POST"); con.setDoOutput(true); con.setRequestProperty("Content-Type","application/json"); if(authToken.length()>0) con.setRequestProperty("Authorization","Bearer "+authToken); con.setConnectTimeout(8000); con.setReadTimeout(10000);
+                JSONObject body=new JSONObject(); body.put("userId",userId); body.put("exam",exam); body.put("score",finalScore); body.put("total",total); body.put("correct",finalScore); body.put("wrong",finalWrong); body.put("skipped",finalSkipped); body.put("durationSeconds",Math.max(0,(int)(duration*60-remainingSeconds)));
                 JSONArray ans=new JSONArray(); for(Integer a:finalAnswers)ans.put(a==null?-1:a); body.put("answers",ans);
                 OutputStream os=con.getOutputStream(); os.write(body.toString().getBytes("UTF-8")); os.close(); con.getResponseCode();
             }catch(Exception ignored){} finally{if(con!=null)con.disconnect();}
