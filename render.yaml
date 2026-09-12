@@ -2,6 +2,7 @@ services:
   - type: web
     name: crackneet-api
     runtime: node
+    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
@@ -23,7 +24,8 @@ services:
         value: "true"
       - key: DATABASE_SSL_REJECT_UNAUTHORIZED
         value: "false"
-  - type: pserv
-    name: crackneet-db
-    runtime: postgres
+
+databases:
+  - name: crackneet-db
     plan: free
+    region: oregon
