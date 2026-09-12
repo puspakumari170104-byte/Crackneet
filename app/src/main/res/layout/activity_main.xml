@@ -3,11 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#F5F8FC">
+    android:background="#F6F8FC">
 
     <LinearLayout
         android:orientation="vertical"
-        android:padding="18dp"
+        android:padding="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -16,38 +16,47 @@
             android:gravity="center_vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:src="@drawable/ic_crackneet"
+                android:contentDescription="CrackNEET logo" />
+
             <LinearLayout
                 android:orientation="vertical"
-                android:layout_weight="1"
+                android:layout_marginStart="12dp"
                 android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content">
                 <TextView
                     android:id="@+id/title"
                     android:text="CrackNEET"
                     android:textColor="#102A43"
-                    android:textSize="30sp"
+                    android:textSize="28sp"
                     android:textStyle="bold"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
                 <TextView
                     android:id="@+id/meta"
-                    android:text="NEET preparation • Practice smarter"
+                    android:text="NEET + JEE Main • Smart practice"
                     android:textColor="#60758A"
-                    android:textSize="14sp"
-                    android:layout_marginTop="3dp"
+                    android:textSize="13sp"
+                    android:layout_marginTop="2dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
             </LinearLayout>
+
             <TextView
-                android:text="NEET"
+                android:text="2026"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
                 android:gravity="center"
-                android:background="#0B6EDE"
-                android:paddingLeft="14dp"
-                android:paddingRight="14dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
+                android:background="@drawable/pill_bg"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -55,29 +64,32 @@
         <LinearLayout
             android:orientation="vertical"
             android:background="@drawable/card_bg"
-            android:layout_marginTop="18dp"
+            android:padding="18dp"
+            android:layout_marginTop="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <TextView
-                android:text="TODAY'S TARGET"
+                android:text="YOUR NEXT STEP"
                 android:textColor="#0B6EDE"
                 android:textSize="12sp"
                 android:textStyle="bold"
+                android:letterSpacing="0.08"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
             <TextView
                 android:text="Ready to crack your next test?"
                 android:textColor="#102A43"
-                android:textSize="21sp"
+                android:textSize="22sp"
                 android:textStyle="bold"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="7dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
             <TextView
-                android:text="Practice questions, track accuracy and improve weak topics."
+                android:text="Practice PYQ-pattern questions, build accuracy and find weak topics."
                 android:textColor="#60758A"
                 android:textSize="14sp"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="6dp"
+                android:lineSpacingExtra="3dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -85,43 +97,21 @@
         <LinearLayout
             android:orientation="horizontal"
             android:weightSum="3"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="14dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <TextView
-                android:text="📚\nQuestion Bank"
-                android:gravity="center"
-                android:textColor="#17324D"
-                android:textSize="13sp"
-                android:background="@drawable/card_bg"
-                android:layout_weight="1"
-                android:layout_marginRight="5dp"
-                android:padding="12dp"
-                android:layout_width="0dp"
-                android:layout_height="76dp"/>
-            <TextView
-                android:text="🎯\nAccuracy"
-                android:gravity="center"
-                android:textColor="#17324D"
-                android:textSize="13sp"
-                android:background="@drawable/card_bg"
-                android:layout_weight="1"
-                android:layout_marginLeft="3dp"
-                android:layout_marginRight="3dp"
-                android:padding="12dp"
-                android:layout_width="0dp"
-                android:layout_height="76dp"/>
-            <TextView
-                android:text="🔥\nStreak"
-                android:gravity="center"
-                android:textColor="#17324D"
-                android:textSize="13sp"
-                android:background="@drawable/card_bg"
-                android:layout_weight="1"
-                android:layout_marginLeft="5dp"
-                android:padding="12dp"
-                android:layout_width="0dp"
-                android:layout_height="76dp"/>
+            <LinearLayout android:orientation="vertical" android:gravity="center" android:background="@drawable/card_bg" android:layout_weight="1" android:padding="12dp" android:layout_marginEnd="5dp" android:layout_width="0dp" android:layout_height="84dp">
+                <TextView android:text="📚" android:textSize="20sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:text="Question Bank" android:textColor="#17324D" android:textSize="12sp" android:textStyle="bold" android:layout_marginTop="4dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:gravity="center" android:background="@drawable/card_bg" android:layout_weight="1" android:padding="12dp" android:layout_marginStart="3dp" android:layout_marginEnd="3dp" android:layout_width="0dp" android:layout_height="84dp">
+                <TextView android:text="🎯" android:textSize="20sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:text="Accuracy" android:textColor="#17324D" android:textSize="12sp" android:textStyle="bold" android:layout_marginTop="4dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:gravity="center" android:background="@drawable/card_bg" android:layout_weight="1" android:padding="12dp" android:layout_marginStart="5dp" android:layout_width="0dp" android:layout_height="84dp">
+                <TextView android:text="🔥" android:textSize="20sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:text="Streak" android:textColor="#17324D" android:textSize="12sp" android:textStyle="bold" android:layout_marginTop="4dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            </LinearLayout>
         </LinearLayout>
 
         <TextView
@@ -129,7 +119,7 @@
             android:textColor="#102A43"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="22dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
@@ -151,7 +141,7 @@
             android:textColor="#0B6EDE"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:backgroundTint="#E8F1FF"
+            android:background="@drawable/secondary_button"
             android:minHeight="54dp"
             android:layout_marginTop="10dp"
             android:layout_width="match_parent"
@@ -160,15 +150,17 @@
         <LinearLayout
             android:orientation="vertical"
             android:background="@drawable/card_bg"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="18dp"
             android:padding="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <TextView
-                android:text="TEST / QUESTION"
+                android:text="LIVE TEST"
                 android:textColor="#60758A"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
+                android:letterSpacing="0.08"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
             <TextView
@@ -184,7 +176,7 @@
                 android:id="@+id/timer"
                 android:text="Time left: 00:30:00"
                 android:textColor="#D9485F"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 android:layout_marginTop="6dp"
                 android:layout_width="match_parent"
@@ -195,7 +187,7 @@
                 android:textColor="#102A43"
                 android:textSize="19sp"
                 android:textStyle="bold"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="15dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
             <RadioGroup
@@ -205,7 +197,7 @@
                 android:layout_marginTop="10dp"/>
             <TextView
                 android:id="@+id/result"
-                android:textSize="17sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#0A7A45"
                 android:layout_marginTop="10dp"
@@ -216,6 +208,7 @@
                 android:textSize="14sp"
                 android:textColor="#52677B"
                 android:layout_marginTop="7dp"
+                android:lineSpacingExtra="3dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
             <TextView
@@ -227,5 +220,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
+
     </LinearLayout>
 </ScrollView>
