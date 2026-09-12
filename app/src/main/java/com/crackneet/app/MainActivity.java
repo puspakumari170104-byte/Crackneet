@@ -360,15 +360,44 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
     }
 
     void showPremium(){
-        base("CrackNEET Pro",true);
-        LinearLayout hero=box();hero.setBackgroundResource(R.drawable.hero_gradient);hero.setPadding(dp(20),dp(20),dp(20),dp(20));
-        hero.addView(tv("✦  CRACKNEET PRO",13,Color.WHITE,true));hero.addView(tv("Serious preparation. Smarter practice.",22,Color.WHITE,true));hero.addView(tv("₹99 / month  •  Cancel anytime",12,Color.rgb(220,240,235),false));content.addView(hero);
-        content.addView(tv("Everything you need",19,DARK,true));
-        card("💳 Pro Membership","₹99/month • Google Play payment • UPI where available","Buy Pro",v->buyPremium());
-        card("🚀 Full Mock Tests","Complete NEET + JEE Main timed tests","Start Mock",v->startTest());
-        card("🧠 Advanced Question Bank","40,000+ practice questions across the syllabus","Unlock Pro",v->premiumDialog("Advanced Question Bank"));
-        card("📊 Advanced Analytics","Weak chapters, accuracy and performance trends","Unlock Pro",v->premiumDialog("Advanced Analytics"));
-        card("⭐ Smart Revision","Revision from attempted questions","Unlock Pro",v->premiumDialog("Smart Revision"));
+        base("Premium Plans",true);
+        content.addView(tv("Choose the plan that fits your preparation",20,DARK,true));
+        premiumPlanCard("BASIC","₹19 / month","10,000 questions","Practice essential NEET question bank", "crackneet_basic_monthly");
+        premiumPlanCard("MODERATE","₹49 / month","20,000 questions","More chapters + larger practice bank", "crackneet_moderate_monthly");
+        premiumPlanCard("ADVANCE","₹99 / month","40,000+ questions","Full question bank + all Pro features", "crackneet_advance_monthly");
+        content.addView(tv("Payment is completed securely through Google Play. UPI will appear when available for your Google Play account.",12,Color.DKGRAY,false));
+    }
+    void premiumPlanCard(String title,String price,String access,String desc,String productId){
+        LinearLayout p=box(); p.setPadding(dp(18),dp(18),dp(18),dp(18)); p.setBackground(bg(Color.WHITE,18));
+        p.addView(tv(title,13,GREEN,true)); p.addView(tv(price,24,DARK,true)); p.addView(tv(access,15,DARK,true)); p.addView(tv(desc,12,Color.DKGRAY,false));
+        Button buy=btn("Continue to payment"); buy.setOnClickListener(v->showPaymentDetails(title,price,productId)); p.addView(buy,new LinearLayout.LayoutParams(-1,dp(48)));
+        LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-1,-2); pp.setMargins(0,dp(8),0,dp(8)); content.addView(p,pp);
+    }
+    void showPaymentDetails(String plan,String price,String productId){
+        LinearLayout l=box(); l.setPadding(dp(22),dp(12),dp(22),dp(4));
+        EditText name=new EditText(this); name.setHint("Full name"); l.addView(name);
+        EditText email=new EditText(this); email.setHint("Email"); email.setInputType(33); l.addView(email);
+        EditText phone=new EditText(this); phone.setHint("Mobile number"); phone.setInputType(2); l.addView(phone);
+        new AlertDialog.Builder(this).setTitle(plan+" • "+price).setMessage("Enter your basic details to continue to secure payment.")
+          .setView(l).setNegativeButton("Cancel",null).setPositiveButton("Continue",(d,w)->{
+              if(name.getText().toString().trim().length()<2||email.getText().toString().trim().length()<5||phone.getText().toString().trim().length()<10){
+                  Toast.makeText(this,"Please enter valid name, email and mobile number.",Toast.LENGTH_LONG).show(); return;
+              }
+              buyPremiumProduct(productId);
+          }).show();
+    }
+    void buyPremiumProduct(String productId){
+        if(billingClient==null||!billingClient.isReady()){Toast.makeText(this,"Payment service is connecting. Please try again.",Toast.LENGTH_SHORT).show();return;}
+        QueryProductDetailsParams.Product p=QueryProductDetailsParams.Product.newBuilder().setProductId(productId).setProductType(BillingClient.ProductType.SUBS).build();
+        billingClient.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder().setProductList(Collections.singletonList(p)).build(),(r,res)->{
+            if(r.getResponseCode()!=BillingClient.BillingResponseCode.OK||res.getProductDetailsList()==null||res.getProductDetailsList().isEmpty()){
+                runOnUiThread(()->Toast.makeText(this,"This Premium plan is not published yet. It will open after Play Console setup.",Toast.LENGTH_LONG).show()); return;
+            }
+            ProductDetails pd=res.getProductDetailsList().get(0); List<ProductDetails.SubscriptionOfferDetails> offers=pd.getSubscriptionOfferDetails();
+            if(offers==null||offers.isEmpty()){runOnUiThread(()->Toast.makeText(this,"Offer unavailable.",Toast.LENGTH_LONG).show());return;}
+            BillingFlowParams.ProductDetailsParams pp=BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(pd).setOfferToken(offers.get(0).getOfferToken()).build();
+            billingClient.launchBillingFlow(this,BillingFlowParams.newBuilder().setProductDetailsParamsList(Collections.singletonList(pp)).build());
+        });
     }
     void premiumDialog(String feature){new AlertDialog.Builder(this).setTitle("CrackNEET Pro").setMessage(feature+" is included in Pro.").setPositiveButton("Continue",null).setNegativeButton("Later",null).show();}
     void initBilling(){
