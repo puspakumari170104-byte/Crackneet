@@ -1,0 +1,111 @@
+name: Apply CrackNEET UI and Notes Fixes
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply fixes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('app/src/main/java/com/crackneet/app/MainActivity.java')
+          s=p.read_text()
+          old='''    void addBottom(LinearLayout frame){
+        LinearLayout nav=new LinearLayout(this);nav.setGravity(Gravity.CENTER);nav.setPadding(dp(4),dp(4),dp(4),dp(5));nav.setBackgroundColor(Color.WHITE);lift(nav,10);
+        String[] names={"⌂\\nHome","▣\\nTests","▤\\nNotes","⌁\\nProgress","♙\\nProfile"};
+        for(final String n:names){TextView b=tv(n,11,n.startsWith("⌂")?GREEN:MUTED,n.startsWith("⌂"));b.setGravity(Gravity.CENTER);b.setPadding(0,dp(5),0,dp(5));b.setBackground(bg(Color.WHITE,12));
+            b.setOnClickListener(v->{if(n.startsWith("⌂"))showDashboard();else if(n.startsWith("▣"))showSubjects();else if(n.startsWith("▤"))showNotes();else if(n.startsWith("⌁"))showProgress();else showProfile();});
+            nav.addView(b,new LinearLayout.LayoutParams(0,dp(56),1));} LinearLayout.LayoutParams np=new LinearLayout.LayoutParams(-1,dp(56)); np.setMargins(0,0,0,dp(8)); frame.addView(nav,np);
+    }'''
+          new='''    void addBottom(LinearLayout frame){
+        LinearLayout nav=new LinearLayout(this);nav.setGravity(Gravity.CENTER);nav.setPadding(dp(6),dp(6),dp(6),dp(6));nav.setBackgroundColor(Color.WHITE);lift(nav,12);
+        String[] names={"⌂\\nHome","▣\\nTests","▤\\nNotes","⌁\\nProgress","♙\\nProfile"};
+        for(final String n:names){TextView b=tv(n,12,n.startsWith("⌂")?GREEN:MUTED,n.startsWith("⌂"));b.setGravity(Gravity.CENTER);b.setPadding(0,dp(7),0,dp(7));b.setBackground(bg(Color.WHITE,14));
+            b.setOnClickListener(v->{if(n.startsWith("⌂"))showDashboard();else if(n.startsWith("▣"))showSubjects();else if(n.startsWith("▤"))showNotes();else if(n.startsWith("⌁"))showProgress();else showProfile();});
+            nav.addView(b,new LinearLayout.LayoutParams(0,dp(72),1));} LinearLayout.LayoutParams np=new LinearLayout.LayoutParams(-1,dp(72)); np.setMargins(0,dp(6),0,0); frame.addView(nav,np);
+    }'''
+          if old not in s: raise SystemExit('bottom block not found')
+          s=s.replace(old,new)
+          old='''    void showNotes(){base("Short Notes",false);card("Biology","NCERT high-yield revision","Open",v->note("Biology Notes"));card("Chemistry","Reactions • Concepts • Formulae","Open",v->note("Chemistry Notes"));card("Physics","Formula sheet • Concepts","Open",v->note("Physics Notes"));}
+    void note(String t){new AlertDialog.Builder(this).setTitle(t).setMessage("High-yield concepts, important facts, formulas and exam tips.").setPositiveButton("Done",null).show();}'''
+          new='''    void showNotes(){
+        base("NCERT Short Notes",false);
+        content.addView(tv("📚 Chapter-wise NCERT Short Notes",23,DARK,true));
+        content.addView(tv("Quick revision • High-yield facts • NEET-focused",13,MUTED,false));
+        card("🧬 Biology","NCERT chapter-wise short notes","Open Chapters",v->showNoteChapters("Biology"));
+        card("⚗ Chemistry","NCERT concepts • reactions • formulae","Open Chapters",v->showNoteChapters("Chemistry"));
+        card("⚡ Physics","NCERT concepts • formulae • laws","Open Chapters",v->showNoteChapters("Physics"));
+    }
+    String[] noteChapters(String subject){
+        if(subject.equals("Biology")) return new String[]{"The Living World","Biological Classification","Plant Kingdom","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Structural Organisation in Animals","Cell: The Unit of Life","Biomolecules","Cell Cycle and Cell Division","Transport in Plants","Mineral Nutrition","Photosynthesis in Plants","Respiration in Plants","Plant Growth and Development","Digestion and Absorption","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration","Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Strategies for Enhancement in Food Production","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation","Environmental Issues"};
+        if(subject.equals("Physics")) return new String[]{"Units and Measurements","Motion in a Straight Line","Motion in a Plane","Laws of Motion","Work, Energy and Power","System of Particles and Rotational Motion","Gravitation","Properties of Bulk Matter","Thermodynamics","Kinetic Theory","Oscillations","Waves","Electric Charges and Fields","Electrostatic Potential and Capacitance","Current Electricity","Moving Charges and Magnetism","Magnetism and Matter","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics and Optical Instruments","Wave Optics","Dual Nature of Radiation and Matter","Atoms","Nuclei","Semiconductor Electronics"};
+        return new String[]{"Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","Thermodynamics","Equilibrium","Redox Reactions","Organic Chemistry: Basic Principles","Hydrocarbons","Solutions","Electrochemistry","Chemical Kinetics","p-Block Elements","d- and f-Block Elements","Coordination Compounds","Haloalkanes and Haloarenes","Alcohols, Phenols and Ethers","Aldehydes, Ketones and Carboxylic Acids","Amines","Biomolecules","Principles Related to Practical Chemistry"};
+    }
+    void showNoteChapters(String subject){
+        base(subject+" Short Notes",true);
+        content.addView(tv("NCERT chapter-wise revision",22,DARK,true));
+        int i=1; for(final String chapter:noteChapters(subject)){ final int no=i++; card(no+". "+chapter,"Key NCERT concepts • definitions • formulas • exam points","Read Notes",v->note(subject,chapter)); }
+    }
+    String noteText(String subject,String chapter){
+        if(subject.equals("Physics")){
+            if(chapter.equals("Units and Measurements")) return "• SI base units: m, kg, s, A, K, mol, cd.\\n• Dimensions help check equations and derive relations.\\n• Significant figures reflect measurement precision.\\n• Error: absolute, relative and percentage error.\\n• NEET focus: dimensional analysis and significant figures.";
+            if(chapter.equals("Laws of Motion")) return "• Newton I: inertia; net force zero gives constant velocity.\\n• Newton II: F = ma; momentum p = mv.\\n• Newton III: action and reaction act on different bodies.\\n• Friction opposes relative motion; limiting friction is proportional to normal reaction.\\n• NEET focus: free-body diagrams and friction.";
+            if(chapter.equals("Work, Energy and Power")) return "• Work W = F s cosθ.\\n• Kinetic energy K = ½mv²; potential energy near Earth = mgh.\\n• Work-energy theorem: net work equals change in kinetic energy.\\n• Power is rate of doing work: P = dW/dt.\\n• Mechanical energy is conserved when only conservative forces do work.";
+            if(chapter.equals("Current Electricity")) return "• Current I = Q/t; Ohm's law V = IR for ohmic conductors.\\n• Resistance R = ρL/A.\\n• Series: resistances add; parallel: reciprocal resistances add.\\n• Electrical power P = VI = I²R = V²/R.\\n• Kirchhoff rules apply to complex circuits.";
+            if(chapter.equals("Electrostatic Potential and Capacitance")) return "• Potential is work done per unit positive test charge.\\n• For a point charge V = kq/r.\\n• Capacitance C = Q/V; parallel-plate C = εA/d.\\n• Capacitors in parallel add directly; series add reciprocally.\\n• Stored energy U = ½CV².";
+            if(chapter.equals("Ray Optics and Optical Instruments")) return "• Reflection obeys i = r.\\n• Refraction follows Snell's law n₁sin i = n₂sin r.\\n• Lens formula: 1/f = 1/v − 1/u under Cartesian convention.\\n• Magnification for a lens m = v/u.\\n• Total internal reflection requires denser-to-rarer travel and incidence above critical angle.";
+            if(chapter.equals("Dual Nature of Radiation and Matter")) return "• Photon energy E = hν = hc/λ.\\n• Photoelectric emission supports particle nature of light.\\n• Einstein equation: Kmax = hν − φ.\\n• Matter wavelength λ = h/p.\\n• Threshold frequency depends on work function.";
+            if(chapter.equals("Semiconductor Electronics")) return "• Intrinsic semiconductor has thermally generated carriers.\\n• n-type uses donor impurity; p-type uses acceptor impurity.\\n• A p-n junction forms a depletion region and potential barrier.\\n• Diode allows strong current mainly in forward bias.\\n• Transistors and digital logic are important applications.";
+        }
+        if(subject.equals("Chemistry")){
+            if(chapter.equals("Some Basic Concepts of Chemistry")) return "• Mole = 6.022×10²³ entities.\\n• Molar mass links mass and moles: n = m/M.\\n• Molarity = moles of solute per litre of solution.\\n• Limiting reagent controls product formation.\\n• Balance equations before stoichiometric calculations.";
+            if(chapter.equals("Structure of Atom")) return "• Electrons occupy quantised energy levels.\\n• Bohr model explains hydrogen spectrum using quantised angular momentum.\\n• Energy of hydrogen atom varies as −1/n².\\n• Orbitals are described by quantum numbers n, l, m and spin.\\n• Aufbau, Pauli and Hund guide electronic configuration.";
+            if(chapter.equals("Chemical Bonding and Molecular Structure")) return "• Ionic bonding involves electron transfer; covalent bonding involves sharing.\\n• Lewis structures show valence-electron sharing.\\n• VSEPR predicts shapes from electron-pair repulsion.\\n• Hybridisation explains common geometries.\\n• Hydrogen bonding strongly affects boiling point and solubility.";
+            if(chapter.equals("Thermodynamics")) return "• System, surroundings and boundary define a thermodynamic process.\\n• First law: ΔU = q + w.\\n• Enthalpy change at constant pressure equals heat change.\\n• Hess law allows enthalpy calculation through reaction steps.\\n• Spontaneity depends on Gibbs energy: ΔG = ΔH − TΔS.";
+            if(chapter.equals("Equilibrium")) return "• Dynamic equilibrium has equal forward and reverse rates.\\n• Equilibrium constant expresses product/reactant ratio at equilibrium.\\n• Le Chatelier principle predicts response to changes.\\n• pH measures hydrogen-ion concentration.\\n• Common-ion effect suppresses ionisation of weak electrolytes.";
+            if(chapter.equals("Electrochemistry")) return "• Oxidation occurs at anode; reduction at cathode.\\n• Galvanic cells convert chemical energy to electrical energy.\\n• Cell potential relates to Gibbs energy.\\n• Nernst equation gives potential under non-standard conditions.\\n• Faraday laws connect charge passed with amount deposited.";
+            if(chapter.equals("Chemical Kinetics")) return "• Rate measures concentration change per unit time.\\n• Rate law relates rate to reactant concentrations.\\n• Order is obtained from rate dependence; molecularity applies to elementary steps.\\n• Arrhenius equation connects rate constant with temperature.\\n• Catalysts lower activation energy without changing equilibrium constant.";
+            if(chapter.equals("Coordination Compounds")) return "• Coordination entities contain a central metal atom/ion and ligands.\\n• Coordination number counts donor atoms attached to the metal.\\n• Ligands may be mono-, bi- or polydentate.\\n• Naming follows ligand then metal conventions.\\n• Isomerism includes geometrical, optical and linkage types.";
+        }
+        if(subject.equals("Biology")){
+            if(chapter.equals("Cell: The Unit of Life")) return "• Cell is the basic structural and functional unit of life.\\n• Plasma membrane is selectively permeable.\\n• Prokaryotes lack a membrane-bound nucleus; eukaryotes possess one.\\n• Mitochondria are major sites of aerobic respiration and ATP production.\\n• Ribosomes are the sites of protein synthesis.";
+            if(chapter.equals("Biomolecules")) return "• Major biomolecules: carbohydrates, proteins, lipids and nucleic acids.\\n• Amino acids are protein building blocks.\\n• Enzymes act as biological catalysts.\\n• DNA and RNA are nucleic acids involved in genetic information.\\n• NCERT structures and examples are high-yield.";
+            if(chapter.equals("Human Reproduction")) return "• Male gametes are formed in seminiferous tubules.\\n• Spermatogenesis includes multiplication, growth and maturation phases.\\n• Oogenesis begins before birth and completes through maturation stages.\\n• Fertilisation normally occurs at the ampullary-isthmic junction.\\n• Implantation occurs in the uterine endometrium.";
+            if(chapter.equals("Principles of Inheritance and Variation")) return "• Mendel established segregation and independent assortment using pea plants.\\n• Alleles are alternative forms of a gene.\\n• Genotype describes genetic constitution; phenotype is observable expression.\\n• Test cross helps determine an unknown dominant genotype.\\n• Extensions include incomplete dominance, codominance and linkage.";
+            if(chapter.equals("Molecular Basis of Inheritance")) return "• DNA stores hereditary information.\\n• Replication is semiconservative.\\n• Transcription forms RNA from a DNA template.\\n• Translation forms polypeptides using mRNA codons and tRNA.\\n• Genetic code is triplet and largely universal.";
+            if(chapter.equals("Human Health and Disease")) return "• Disease may be infectious or non-infectious.\\n• Innate immunity is non-specific; acquired immunity is specific and has memory.\\n• Vaccination develops protective immune memory.\\n• Allergies involve exaggerated immune responses.\\n• NCERT examples of pathogens, diseases and control measures are important.";
+            if(chapter.equals("Ecosystem")) return "• Ecosystem includes biotic community and abiotic environment.\\n• Energy flow is unidirectional through trophic levels.\\n• Food chains and food webs describe feeding relationships.\\n• Decomposers recycle nutrients.\\n• Ecological pyramids may represent number, biomass or energy.";
+            if(chapter.equals("Biodiversity and Conservation")) return "• Biodiversity exists at genetic, species and ecosystem levels.\\n• Species richness varies across geographical regions.\\n• Major threats include habitat loss, overexploitation, alien species and co-extinctions.\\n• In-situ conservation protects species in natural habitats.\\n• Ex-situ conservation uses facilities such as botanical gardens and zoos.";
+        }
+        return "• Core NCERT concepts and definitions for "+chapter+".\\n• Revise labelled diagrams, tables, examples and exceptions from the NCERT chapter.\\n• Mark important formulas/reactions and learn their conditions.\\n• Practice NCERT-based MCQs and previous-year questions after revision.\\n• NEET tip: revise this chapter repeatedly using active recall.";
+    }
+    void note(String subject,String chapter){new AlertDialog.Builder(this).setTitle(chapter).setMessage(noteText(subject,chapter)).setPositiveButton("Done",null).show();}'''
+          if old not in s: raise SystemExit('notes block not found')
+          s=s.replace(old,new)
+          p.write_text(s)
+          PY
+          cat > app/src/main/res/drawable/ic_crackneet.xml <<'EOF2'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="108" android:viewportHeight="108">
+              <path android:fillColor="#075E54" android:pathData="M54,4A50,50 0,1 0,54 104A50,50 0,1 0,54 4"/>
+              <path android:fillColor="#FFFFFF" android:pathData="M54,18c-11,0 -20,9 -20,20v8h40v-8c0,-11 -9,-20 -20,-20z"/>
+              <path android:fillColor="#FFFFFF" android:pathData="M31,48h46v12H31z"/>
+              <path android:fillColor="#FFFFFF" android:pathData="M39,60h30v24H39z"/>
+              <path android:fillColor="#A7E8D8" android:pathData="M43,68h22v8H43z"/>
+              <path android:fillColor="#DDF7F0" android:pathData="M77,62c8,0 12,5 12,12v4h-5v-4c0,-4 -2,-7 -7,-7z"/>
+              <path android:fillColor="#DDF7F0" android:pathData="M84,76c0,5 -3,9 -8,9 -4,0 -7,-3 -7,-7h5c0,2 1,3 3,3 2,0 3,-2 3,-5z"/>
+              <path android:fillColor="#A7E8D8" android:pathData="M26,29l3,7 7,3 -7,3 -3,7 -3,-7 -7,-3 7,-3z"/>
+          </vector>
+EOF2
+          git config user.name 'CrackNEET Bot'
+          git config user.email 'actions@github.com'
+          git add app/src/main/java/com/crackneet/app/MainActivity.java app/src/main/res/drawable/ic_crackneet.xml
+          git commit -m 'Fix NCERT notes, bottom navigation, and doctor logo'
+          git push
