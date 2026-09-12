@@ -402,6 +402,35 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         content.addView(tv("• NCERT terminology\n• High-yield facts\n• Formula / reaction / process where applicable\n• Common NEET confusion points",14,TEXT,false));
     }
 
+    String noteText(String s,String ch){
+        if(s.equals("Biology")&&ch.equals("Cell: The Unit of Life")) return "Cell is the basic structural and functional unit of life. Prokaryotes lack a membrane-bound nucleus; eukaryotes have a true nucleus and membrane-bound organelles. Plasma membrane is selectively permeable.";
+        if(s.equals("Biology")&&ch.equals("Molecular Basis of Inheritance")) return "DNA stores hereditary information. Replication is semiconservative. Transcription forms RNA from DNA template; translation uses mRNA information to build polypeptides.";
+        if(s.equals("Biology")&&ch.equals("Human Reproduction")) return "Spermatogenesis occurs in testes; oogenesis occurs in ovaries. In humans, fertilisation normally occurs at the ampullary-isthmic junction of the oviduct.";
+        if(s.equals("Biology")&&ch.equals("Photosynthesis in Higher Plants")) return "Light reactions occur in thylakoid membranes; carbon fixation occurs in the stroma. Light energy drives formation of ATP and NADPH used in carbon fixation.";
+        if(s.equals("Chemistry")&&ch.equals("Some Basic Concepts of Chemistry")) return "Mole concept connects particles with measurable mass. Revise molar mass, Avogadro constant, stoichiometry, limiting reagent and concentration terms.";
+        if(s.equals("Chemistry")&&ch.equals("Chemical Bonding and Molecular Structure")) return "Ionic, covalent and coordinate bonding involve electron transfer or sharing. Molecular shape depends on electron-pair arrangement and orbital concepts.";
+        if(s.equals("Chemistry")&&ch.equals("Equilibrium")) return "Chemical equilibrium is dynamic: forward and reverse rates are equal at equilibrium. Changes in concentration, pressure or temperature can shift equilibrium.";
+        if(s.equals("Physics")&&ch.equals("Units and Measurements")) return "Physical quantities require units and measurement. SI units, dimensions, significant figures, errors and uncertainty are essential for NEET numericals.";
+        if(s.equals("Physics")&&ch.equals("Laws of Motion")) return "Newton's laws connect force and motion. Net force equals rate of change of momentum; friction opposes relative motion between surfaces.";
+        if(s.equals("Physics")&&ch.equals("Current Electricity")) return "Current is charge flow. Ohm's law relates potential difference, current and resistance for ohmic conductors. Series and parallel combinations follow circuit rules.";
+        return "NEET quick revision: definitions, laws/principles, important relations, examples, exceptions, diagrams/tables and one-step applications.";
+    }
+    String noteFlow(String s,String ch){
+        if(s.equals("Biology")&&ch.equals("Molecular Basis of Inheritance")) return "DNA → Replication → Transcription → RNA → Translation → Protein → Trait";
+        if(s.equals("Biology")&&ch.equals("Photosynthesis in Higher Plants")) return "Light → Excitation → Electron transport → ATP/NADPH → CO2 fixation → Carbohydrate";
+        if(s.equals("Chemistry")&&ch.equals("Some Basic Concepts of Chemistry")) return "Mass → Moles → Particles → Stoichiometric ratio → Product";
+        if(s.equals("Chemistry")&&ch.equals("Equilibrium")) return "Reactants ⇌ Products → Equilibrium → Stress → Shift → New equilibrium";
+        if(s.equals("Physics")&&ch.equals("Current Electricity")) return "Charge → Current → Potential difference → Resistance → Circuit → Power";
+        if(s.equals("Physics")&&ch.equals("Units and Measurements")) return "Quantity → Unit → Measurement → Error → Significant figures → Result";
+        return "Concept → Definition/Law → Relation → Application → Exception → NEET MCQ";
+    }
+    String noteDiagram(String s,String ch){
+        if(s.equals("Biology")&&ch.equals("Cell: The Unit of Life")) return "CELL\n├─ Plasma membrane\n├─ Cytoplasm\n├─ Nucleus\n├─ Mitochondria\n└─ Ribosomes";
+        if(s.equals("Biology")&&ch.equals("Molecular Basis of Inheritance")) return "DNA → Replication → Transcription → mRNA → Translation → Protein";
+        if(s.equals("Chemistry")&&ch.equals("Chemical Bonding and Molecular Structure")) return "Valence electrons → Bond → Electron-pair arrangement → Shape → Polarity";
+        if(s.equals("Physics")&&ch.equals("Current Electricity")) return "Cell (+) ── R ── Ammeter ──┐\n└────────────────────(−)";
+        return "Key concept → relationship → process → outcome";
+    }
     void showNcertChapter(String cls,String subject){
         base("NCERT • "+cls+" • "+subject,true);
         content.addView(tv("Choose chapter",20,DARK,true));
