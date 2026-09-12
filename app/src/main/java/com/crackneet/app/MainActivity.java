@@ -169,7 +169,7 @@ public class MainActivity extends Activity {
     }
     void showSolutions(){
         base("Solutions",true);content.addView(tv("Answer Key & Explanations",21,DARK,true));
-        for(int i=0;i<test.size();i++){Question q=test.get(i);int chosen=answers.size()>i?answers.get(i):-1;String status=chosen<0?"○ Unattempted":chosen==q.answer?"✓ Correct":"× Wrong";String selected=chosen<0?"Not attempted":q.options[chosen];String body="Your answer: "+selected+"\nCorrect answer: "+q.options[q.answer]+"\n\nSolution\n"+q.solution;card("Q"+(i+1)+"  •  "+status,q.text,"View Solution",v->solutionDialog("Q"+(i+1),body));}
+        for(int i=0;i<test.size();i++){Question q=test.get(i);int chosen=answers.size()>i?answers.get(i):-1;String status=chosen<0?"○ Unattempted":chosen==q.answer?"✓ Correct":"× Wrong";String selected=chosen<0?"Not attempted":q.options[chosen];String body="Your answer: "+selected+"\nCorrect answer: "+q.options[q.answer]+"\n\nSolution\n"+q.solution;final String title="Q"+(i+1)+"  •  "+status;final String details=body;card(title,q.text,"View Solution",v->solutionDialog(title,details));}
     }
     void solutionDialog(String title,String body){new AlertDialog.Builder(this).setTitle(title).setMessage(body).setPositiveButton("Done",null).show();}
     void showAnalysis(){
