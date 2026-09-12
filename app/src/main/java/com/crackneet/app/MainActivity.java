@@ -452,29 +452,7 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         g.setCornerRadius(30f); t.setBackground(g); t.setPadding(24,22,24,22);
         content.addView(t);
     }
-    String noteText(String s,String ch){
-        if(s.equals("Biology")&&ch.equals("Cell: The Unit of Life")) return "Cell is the basic structural and functional unit of life. Prokaryotes lack a membrane-bound nucleus; eukaryotes possess a true nucleus and membrane-bound organelles. Plasma membrane is selectively permeable.";
-        if(s.equals("Biology")&&ch.equals("Biomolecules")) return "Carbohydrates, proteins, lipids and nucleic acids are major biomolecules. Proteins are polymers of amino acids; nucleic acids are polymers of nucleotides. Enzymes act as biological catalysts.";
-        if(s.equals("Biology")&&ch.equals("Human Reproduction")) return "Spermatogenesis occurs in testes and oogenesis in ovaries. The menstrual cycle involves follicular, ovulatory and luteal phases. Fertilisation normally occurs at the ampullary-isthmic junction.";
-        if(s.equals("Biology")&&ch.equals("Photosynthesis in Higher Plants")) return "Light reactions occur in thylakoid membranes; carbon fixation occurs in the stroma. ATP and NADPH produced in light reactions support carbon fixation.";
-        if(s.equals("Biology")&&ch.equals("Respiration in Plants")) return "Glycolysis occurs in cytoplasm. Aerobic respiration proceeds through mitochondrial pathways and oxidative phosphorylation; respiration releases usable cellular energy.";
-        if(s.equals("Biology")&&ch.equals("Molecular Basis of Inheritance")) return "DNA is hereditary material in most organisms. Replication is semiconservative; transcription produces RNA and translation produces polypeptide using mRNA information.";
-        if(s.equals("Biology")&&ch.equals("Principles of Inheritance and Variation")) return "Mendelian inheritance includes segregation and independent assortment under suitable conditions. Mutation and recombination contribute to genetic variation.";
-        if(s.equals("Biology")&&ch.equals("Human Health and Disease")) return "Health includes physical, mental and social well-being. Immunity has innate and acquired components; vaccination can generate immune memory.";
-        if(s.equals("Chemistry")&&ch.equals("Some Basic Concepts of Chemistry")) return "Mole concept links particles and measurable mass. Key tools: molar mass, Avogadro constant, stoichiometry, limiting reagent and concentration.";
-        if(s.equals("Chemistry")&&ch.equals("Structure of Atom")) return "Atoms contain nuclei and electrons. Electron energies are quantised; quantum numbers describe allowed states and electronic configuration follows occupancy rules.";
-        if(s.equals("Chemistry")&&ch.equals("Chemical Bonding and Molecular Structure")) return "Ionic, covalent and coordinate bonding involve electron transfer or sharing. Molecular geometry depends on electron-pair arrangement and orbital concepts.";
-        if(s.equals("Chemistry")&&ch.equals("Thermodynamics")) return "Thermodynamics tracks energy changes. Internal energy and enthalpy describe energy transfer; entropy and Gibbs energy help assess spontaneity.";
-        if(s.equals("Chemistry")&&ch.equals("Equilibrium")) return "Chemical equilibrium is dynamic: forward and reverse rates are equal. Concentration, pressure and temperature changes can shift equilibrium.";
-        if(s.equals("Physics")&&ch.equals("Units and Measurements")) return "Physical quantities require units. SI units, dimensions, significant figures, errors and uncertainty are essential for measurement-based questions.";
-        if(s.equals("Physics")&&ch.equals("Motion in a Straight Line")) return "Position, displacement, velocity and acceleration describe one-dimensional motion. Uniform acceleration gives v = u + at and s = ut + 1/2 at².";
-        if(s.equals("Physics")&&ch.equals("Laws of Motion")) return "Newton's laws relate force and motion. F = dp/dt; for constant mass F = ma. Friction opposes relative motion or its tendency.";
-        if(s.equals("Physics")&&ch.equals("Work, Energy and Power")) return "Work is energy transferred by force through displacement. Kinetic energy is 1/2 mv²; power is rate of doing work.";
-        if(s.equals("Physics")&&ch.equals("Current Electricity")) return "Current is charge flow. Ohm's law gives V = IR for ohmic conductors; series and parallel combinations follow circuit rules.";
-        if(s.equals("Physics")&&ch.equals("Ray Optics and Optical Instruments")) return "Reflection and refraction are treated using rays. Mirror/lens equations connect object, image and focal distances; apply sign convention consistently.";
-        return "Chapter-wise NCERT revision: key definitions, core concepts, important processes/relations, examples, exceptions, diagrams/tables and NEET high-yield points.";
-    }
-    String noteFlow(String s,String ch){
+    String noteText(String s,String ch){\n        return NcertNotes.get(s,ch);\n    }\n    String noteFlow(String s,String ch){
         if(s.equals("Biology")&&ch.equals("Molecular Basis of Inheritance")) return "DNA → Replication → Transcription → RNA → Translation → Protein → Trait";
         if(s.equals("Biology")&&ch.equals("Photosynthesis in Higher Plants")) return "Light → Excitation → Electron transport → ATP/NADPH → CO2 fixation → Carbohydrate";
         if(s.equals("Chemistry")&&ch.equals("Some Basic Concepts of Chemistry")) return "Mass → Moles → Particles → Stoichiometric ratio → Product";
