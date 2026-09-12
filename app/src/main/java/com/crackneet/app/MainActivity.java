@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
         LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER);brand.addView(a);brand.addView(n);l.addView(brand,new LinearLayout.LayoutParams(-1,dp(60)));
         TextView sub=tv("Your NEET + JEE Preparation Companion",14,Color.rgb(200,220,220),false);sub.setGravity(Gravity.CENTER);l.addView(sub);
         TextView tag=tv("PREPARE   •   PRACTICE   •   IMPROVE",11,GREEN,true);tag.setGravity(Gravity.CENTER);tag.setPadding(0,dp(24),0,0);l.addView(tag);
-        root.addView(l); new Handler().postDelayed(new Runnable(){public void run(){showWelcome();}},1200);
+        root.addView(l); new Handler().postDelayed(new Runnable(){public void run(){showWelcome();}},5000);
     }
     void showWelcome(){
         root.removeAllViews();
@@ -75,9 +75,9 @@ public class MainActivity extends Activity {
 
         cap.setCameraDistance(getResources().getDisplayMetrics().density*12000);
         cap.setScaleX(.72f); cap.setScaleY(.72f); cap.setAlpha(0f); cap.setRotationY(-55f);
-        cap.animate().alpha(1f).scaleX(1f).scaleY(1f).rotationY(0f).setDuration(900).start();
+        cap.animate().alpha(1f).scaleX(1f).scaleY(1f).rotationY(0f).setDuration(1800).start();
         glow.setScaleX(.65f); glow.setScaleY(.65f);
-        glow.animate().scaleX(1.15f).scaleY(1.15f).alpha(.10f).setDuration(1300).start();
+        glow.animate().scaleX(1.18f).scaleY(1.18f).alpha(.10f).setDuration(2200).start();
 
         LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER);
         TextView cr=tv("Crack",31,DARK,true);TextView ne=tv("NEET",31,GREEN,true);
@@ -128,11 +128,17 @@ public class MainActivity extends Activity {
         new Thread(() -> {
             try{
                 HttpURLConnection con=(HttpURLConnection)new URL(API_BASE+"/api/auth/register").openConnection();
-                con.setRequestMethod("POST");con.setDoOutput(true);con.setRequestProperty("Content-Type","application/json");
+                con.setRequestMethod("POST");con.setDoOutput(true);
+                con.setConnectTimeout(20000);con.setReadTimeout(25000);
+                con.setRequestProperty("Content-Type","application/json; charset=UTF-8");
+                con.setRequestProperty("Accept","application/json");
                 JSONObject body=new JSONObject();body.put("name",name);body.put("email",email);body.put("password",password);
                 OutputStream os=con.getOutputStream();os.write(body.toString().getBytes("UTF-8"));os.close();
-                int code=con.getResponseCode();InputStream is=code>=400?con.getErrorStream():con.getInputStream();BufferedReader br=new BufferedReader(new InputStreamReader(is));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();
-                JSONObject out=new JSONObject(sb.toString());if(code!=201)throw new Exception(out.optString("error","Registration failed"));
+                int code=con.getResponseCode();InputStream raw=code>=400?con.getErrorStream():con.getInputStream();
+                if(raw==null) throw new Exception("Server returned HTTP "+code);
+                BufferedReader br=new BufferedReader(new InputStreamReader(raw,"UTF-8"));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();
+                JSONObject out; try{out=new JSONObject(sb.toString());}catch(Exception parse){throw new Exception("Server returned HTTP "+code);}
+                if(code!=201)throw new Exception(out.optString("error","Registration failed (HTTP "+code+")"));
                 JSONObject u=out.getJSONObject("user");pendingProfileName=u.optString("name","Student"); pendingProfileEmail=u.optString("email","");saveSession(u.getLong("id"),out.getString("token"));runOnUiThread(()->showDashboard());
             }catch(Exception e){runOnUiThread(()->Toast.makeText(this,e.getMessage()==null?"Registration failed":e.getMessage(),Toast.LENGTH_LONG).show());}
         }).start();

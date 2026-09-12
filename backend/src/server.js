@@ -70,16 +70,29 @@ function issueToken(){return crypto.randomBytes(32).toString("hex");}
 app.post("/api/auth/register",async(req,res)=>{
  try{
   const {name,email,password}=req.body||{};
-  if(!name||!email||!password||password.length<8) return res.status(400).json({error:"name_email_and_8_char_password_required"});
-  const normalized=String(email).trim().toLowerCase();
+  const cleanName=String(name||"").trim();
+  const normalized=String(email||"").trim().toLowerCase();
+  const cleanPassword=String(password||"");
+  if(cleanName.length<2||normalized.length<5||cleanPassword.length<8) return res.status(400).json({error:"name_email_and_8_char_password_required"});
+
+  // A Render cold start or an interrupted database migration must not turn into a generic registration failure.
+  // Ensure the account/session tables exist before the first registration attempt.
+  try{await pool.query("SELECT 1 FROM users LIMIT 1");}
+  catch(dbErr){console.error("Registration DB readiness check failed",dbErr); await ensureDatabase();}
+
   const exists=await pool.query("SELECT id FROM users WHERE email=$1",[normalized]);
   if(exists.rows.length) return res.status(409).json({error:"email_already_registered"});
-  const hash=await bcrypt.hash(String(password),12);
-  const u=await pool.query("INSERT INTO users(name,email,password_hash) VALUES($1,$2,$3) RETURNING id,name,email",[String(name).trim(),normalized,hash]);
+  const hash=await bcrypt.hash(cleanPassword,12);
+  const u=await pool.query("INSERT INTO users(name,email,password_hash) VALUES($1,$2,$3) RETURNING id,name,email",[cleanName,normalized,hash]);
   const token=issueToken();
   await pool.query("INSERT INTO sessions(user_id,token_hash,expires_at) VALUES($1,$2,NOW()+INTERVAL '30 days')",[u.rows[0].id,tokenHash(token)]);
   res.status(201).json({user:u.rows[0],token});
- }catch(e){res.status(500).json({error:"registration_failed"});}
+ }catch(e){
+  console.error("Registration error",e);
+  const msg=String(e&&e.message||"");
+  if(msg.toLowerCase().includes("duplicate")||msg.toLowerCase().includes("unique")) return res.status(409).json({error:"email_already_registered"});
+  res.status(500).json({error:"registration_failed"});
+ }
 });
 
 app.post("/api/auth/login",async(req,res)=>{
