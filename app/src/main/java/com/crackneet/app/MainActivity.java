@@ -56,11 +56,11 @@ public class MainActivity extends Activity {
         addBottom(frame);root.addView(frame);
     }
     void addBottom(LinearLayout frame){
-        LinearLayout nav=new LinearLayout(this);nav.setGravity(Gravity.CENTER);nav.setBackgroundColor(Color.WHITE);
-        String[] names={"Home","Tests","Notes","Progress","Profile"};
-        for(final String n:names){Button b=btn(n);b.setTextSize(11);b.setTextColor(MUTED);b.setBackgroundColor(Color.TRANSPARENT);
-            b.setOnClickListener(v->{if(n.equals("Home"))showDashboard();else if(n.equals("Tests"))showSubjects();else if(n.equals("Notes"))showNotes();else if(n.equals("Progress"))showProgress();else showProfile();});
-            nav.addView(b,new LinearLayout.LayoutParams(0,dp(56),1));}frame.addView(nav);
+        LinearLayout nav=new LinearLayout(this);nav.setGravity(Gravity.CENTER);nav.setPadding(dp(4),dp(4),dp(4),dp(5));nav.setBackgroundColor(Color.WHITE);
+        String[] names={"⌂\nHome","▣\nTests","▤\nNotes","⌁\nProgress","♙\nProfile"};
+        for(final String n:names){TextView b=tv(n,11,n.startsWith("⌂")?GREEN:MUTED,n.startsWith("⌂"));b.setGravity(Gravity.CENTER);b.setPadding(0,dp(5),0,dp(5));b.setBackground(bg(Color.WHITE,12));
+            b.setOnClickListener(v->{if(n.startsWith("⌂"))showDashboard();else if(n.startsWith("▣"))showSubjects();else if(n.startsWith("▤"))showNotes();else if(n.startsWith("⌁"))showProgress();else showProfile();});
+            nav.addView(b,new LinearLayout.LayoutParams(0,dp(62),1));}frame.addView(nav);
     }
     void card(String title,String sub,String action,View.OnClickListener click){
         LinearLayout c=box();c.setBackground(bg(Color.WHITE,16));c.setPadding(dp(16),dp(14),dp(16),dp(14));
@@ -70,14 +70,32 @@ public class MainActivity extends Activity {
     }
     void showDashboard(){
         base("CrackNEET",false);
-        LinearLayout hero=box(); hero.setPadding(dp(18),dp(18),dp(18),dp(18)); hero.setBackground(bg(DARK,22));
-        TextView h1=tv("CrackNEET",28,Color.WHITE,true); hero.addView(h1); TextView h2=tv("Your complete NEET + JEE preparation hub",14,Color.rgb(205,230,225),false); hero.addView(h2);
-        TextView badge=tv("40,000+ QUESTIONS  •  PYQ  •  MOCKS",12,Color.WHITE,true); badge.setPadding(dp(10),dp(12),dp(10),dp(12)); badge.setBackground(bg(GREEN,12)); LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-2,dp(44));bp.setMargins(0,dp(12),0,0);hero.addView(badge,bp); content.addView(hero,new LinearLayout.LayoutParams(-1,dp(178)));
-        content.addView(tv("Good Morning 👋",24,DARK,true));content.addView(tv("Keep going. Your hard work will pay off.",14,MUTED,false));
-        card("Today's Target","3 / 10 Chapters completed","Continue",v->showSubjects());
-        card("NEET Mock Tests","Full syllabus • Chapter tests • PYQ","Start Test",v->showSubjects());
+        LinearLayout hero=box();hero.setPadding(dp(18),dp(16),dp(18),dp(16));hero.setBackground(bg(DARK,20));
+        TextView h1=tv("CrackNEET",27,Color.WHITE,true);hero.addView(h1);
+        TextView h2=tv("Your NEET + JEE preparation companion",13,Color.rgb(210,235,229),false);hero.addView(h2);
+        LinearLayout stats=new LinearLayout(this);stats.setPadding(0,dp(10),0,0);
+        TextView s1=tv("40K+\nQuestions",13,Color.WHITE,true);s1.setGravity(Gravity.CENTER);stats.addView(s1,new LinearLayout.LayoutParams(0,dp(55),1));
+        TextView s2=tv("PYQ +\nPractice",13,Color.WHITE,true);s2.setGravity(Gravity.CENTER);stats.addView(s2,new LinearLayout.LayoutParams(0,dp(55),1));
+        TextView s3=tv("Mock\nTests",13,Color.WHITE,true);s3.setGravity(Gravity.CENTER);stats.addView(s3,new LinearLayout.LayoutParams(0,dp(55),1));hero.addView(stats);
+        content.addView(hero,new LinearLayout.LayoutParams(-1,dp(165)));
+        content.addView(tv("Good Morning 👋",23,DARK,true));content.addView(tv("Keep going. Your hard work will pay off.",14,MUTED,false));
+        LinearLayout target=box();target.setBackground(bg(Color.WHITE,18));target.addView(tv("Today's Target",18,DARK,true));target.addView(tv("3 / 10 Chapters",13,MUTED,false));
+        TextView progress=tv("██████░░░░  30%",12,GREEN,true);target.addView(progress);content.addView(target,new LinearLayout.LayoutParams(-1,dp(105)));
+        content.addView(tv("Quick Access",18,DARK,true));
+        LinearLayout row1=new LinearLayout(this);row1.setGravity(Gravity.CENTER);
+        miniCard(row1,"📝","Take Test","Practice & Improve",v->showSubjects());miniCard(row1,"📚","Short Notes","Revise Smart",v->showNotes());content.addView(row1);
+        LinearLayout row2=new LinearLayout(this);row2.setGravity(Gravity.CENTER);
+        miniCard(row2,"📈","Performance","View Analytics",v->showProgress());miniCard(row2,"🔥","Weak Topics","Focus & Improve",v->showProgress());content.addView(row2);
+        content.addView(tv("Upcoming Tests",18,DARK,true));
+        card("Full Syllabus Mock Test","Physics • Chemistry • Biology • 180 Questions","Start",v->startInstructions());
+        card("NEET PYQ Practice","Previous Years • Chapter-wise","Practice",v->showSubjects());
         card("JEE Main PYQ","Physics • Chemistry • Mathematics","Practice",v->{exam="JEE Main";showSubjects();});
-        card("40,000+ Question Bank","PYQ + PYQ Based + Mixed + Advanced Types","Explore",v->showSubjects());
+    }
+    void miniCard(LinearLayout row,String icon,String title,String sub,View.OnClickListener click){
+        LinearLayout c=box();c.setGravity(Gravity.CENTER_VERTICAL);c.setBackground(bg(Color.WHITE,16));c.setPadding(dp(12),dp(10),dp(10),dp(10));
+        TextView i=tv(icon,24,GREEN,true);c.addView(i,new LinearLayout.LayoutParams(-1,dp(32)));
+        c.addView(tv(title,14,DARK,true));c.addView(tv(sub,10,MUTED,false));c.setOnClickListener(click);
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(118),1);p.setMargins(dp(4),dp(4),dp(4),dp(4));row.addView(c,p);
     }
     void showSubjects(){
         base(exam+" Tests",true);content.addView(tv("Choose your subject",22,DARK,true));
