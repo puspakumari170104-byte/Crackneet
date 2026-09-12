@@ -53,13 +53,41 @@ public class MainActivity extends Activity {
         root.addView(l); new Handler().postDelayed(new Runnable(){public void run(){showWelcome();}},1200);
     }
     void showWelcome(){
-        root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER_HORIZONTAL);l.setPadding(dp(26),dp(28),dp(26),dp(22));l.setBackgroundResource(R.drawable.app_background);
-        ImageView cap=new ImageView(this);cap.setImageResource(R.drawable.ic_crackneet);cap.setScaleType(ImageView.ScaleType.CENTER_INSIDE);l.addView(cap,new LinearLayout.LayoutParams(-1,dp(72)));
-        LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER);TextView cr=tv("Crack",31,DARK,true);TextView ne=tv("NEET",31,GREEN,true);brand.addView(cr);brand.addView(ne);l.addView(brand);
-        TextView welcome=tv("Welcome Back!",22,TEXT,true);welcome.setGravity(Gravity.CENTER);l.addView(welcome,new LinearLayout.LayoutParams(-1,dp(55)));
-        TextView info=tv("Your NEET journey continues here.",14,MUTED,false);info.setGravity(Gravity.CENTER);l.addView(info);
+        root.removeAllViews();
+        LinearLayout l=box();
+        l.setGravity(Gravity.CENTER_HORIZONTAL);
+        l.setPadding(dp(26),dp(20),dp(26),dp(22));
+        l.setBackgroundResource(R.drawable.app_background);
+
+        FrameLayout hero=new FrameLayout(this);
+        hero.setLayoutParams(new LinearLayout.LayoutParams(-1,dp(205)));
+        TextView glow=tv("✦",86,Color.rgb(150,230,210),true);
+        glow.setGravity(Gravity.CENTER);
+        glow.setAlpha(.22f);
+        hero.addView(glow,new FrameLayout.LayoutParams(-1,-1));
+
+        ImageView cap=new ImageView(this);
+        cap.setImageResource(R.drawable.ic_crackneet);
+        cap.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-1,dp(112),Gravity.CENTER);
+        hero.addView(cap,lp);
+        l.addView(hero);
+
+        cap.setCameraDistance(getResources().getDisplayMetrics().density*12000);
+        cap.setScaleX(.72f); cap.setScaleY(.72f); cap.setAlpha(0f); cap.setRotationY(-55f);
+        cap.animate().alpha(1f).scaleX(1f).scaleY(1f).rotationY(0f).setDuration(900).start();
+        glow.setScaleX(.65f); glow.setScaleY(.65f);
+        glow.animate().scaleX(1.15f).scaleY(1.15f).alpha(.10f).setDuration(1300).start();
+
+        LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER);
+        TextView cr=tv("Crack",31,DARK,true);TextView ne=tv("NEET",31,GREEN,true);
+        brand.addView(cr);brand.addView(ne);l.addView(brand);
+        TextView welcome=tv("Welcome to CrackNEET",22,TEXT,true);welcome.setGravity(Gravity.CENTER);
+        l.addView(welcome,new LinearLayout.LayoutParams(-1,dp(55)));
+        TextView info=tv("Learn • Practice • Revise • Crack NEET",14,MUTED,false);info.setGravity(Gravity.CENTER);l.addView(info);
         l.addView(tv("LOGIN TO CONTINUE",11,GREEN,true));
-        EditText email=new EditText(this);email.setHint("  Email or Mobile Number");email.setTextColor(TEXT);email.setHintTextColor(MUTED);email.setBackground(bg(Color.WHITE,14));LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,dp(56));ep.setMargins(0,dp(10),0,dp(6));l.addView(email,ep);
+        EditText email=new EditText(this);email.setHint("  Email or Mobile Number");email.setTextColor(TEXT);email.setHintTextColor(MUTED);email.setBackground(bg(Color.WHITE,14));
+        LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,dp(56));ep.setMargins(0,dp(10),0,dp(6));l.addView(email,ep);
         EditText pass=new EditText(this);pass.setHint("  Password");pass.setTextColor(TEXT);pass.setHintTextColor(MUTED);pass.setInputType(129);pass.setBackground(bg(Color.WHITE,14));l.addView(pass,new LinearLayout.LayoutParams(-1,dp(56)));
         TextView forgot=tv("Forgot Password?",12,GREEN,true);forgot.setGravity(Gravity.RIGHT);l.addView(forgot);
         Button login=btn("Login");login.setOnClickListener(v->login(email.getText().toString().trim(),pass.getText().toString()));l.addView(login,new LinearLayout.LayoutParams(-1,dp(52)));
@@ -67,6 +95,7 @@ public class MainActivity extends Activity {
         TextView signup=tv("Don't have an account?  Sign Up",12,GREEN,true);signup.setGravity(Gravity.CENTER);signup.setOnClickListener(v->showSignup());l.addView(signup);
         root.addView(l);
     }
+
     void login(final String email,final String password){
         if(email.length()==0||password.length()<8){Toast.makeText(this,"Enter a valid email and password (8+ characters).",Toast.LENGTH_SHORT).show();return;}
         new Thread(() -> {
