@@ -402,7 +402,15 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         billingClient.launchBillingFlow(this,flow);
     }
 
-    void showDrawer(){final String[] items={"Home","Tests","Notes","Progress","Profile","Premium"};new AlertDialog.Builder(this).setTitle("CrackNEET").setItems(items,(d,w)->{if(w==0)showDashboard();else if(w==1)showSubjects();else if(w==2)showNotes();else if(w==3)showProgress();else if(w==4)showProfile();else showPremium();}).show();}
+    void showDrawer(){
+        final String[] items={"⌂  Home","📝  Tests","📚  Notes","📊  Progress","👤  Profile","⭐  Premium"};
+        final Dialog dialog=new Dialog(this); LinearLayout panel=new LinearLayout(this); panel.setOrientation(LinearLayout.VERTICAL); panel.setPadding(dp(18),dp(22),dp(18),dp(18));
+        GradientDrawable bg=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(10,55,55),Color.rgb(18,30,48)}); bg.setCornerRadius(dp(24)); panel.setBackground(bg);
+        TextView title=tv("CRACKNEET",20,Color.WHITE,true); title.setGravity(Gravity.CENTER); panel.addView(title,new LinearLayout.LayoutParams(-1,dp(54)));
+        TextView sub=tv("Your preparation hub",12,Color.rgb(205,225,220),false); sub.setGravity(Gravity.CENTER); panel.addView(sub,new LinearLayout.LayoutParams(-1,dp(30)));
+        for(int k=0;k<items.length;k++){ final int w=k; Button b=btn(items[k]); b.setGravity(Gravity.CENTER_VERTICAL|Gravity.LEFT); b.setTextSize(15); b.setTextColor(Color.WHITE); b.setBackground(bg(Color.argb(55,255,255,255),16)); LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,dp(50)); bp.setMargins(0,dp(5),0,dp(5)); panel.addView(b,bp); b.setOnClickListener(v->{dialog.dismiss();if(w==0)showDashboard();else if(w==1)showSubjects();else if(w==2)showNotes();else if(w==3)showProgress();else if(w==4)showProfile();else showPremium();});}
+        dialog.setContentView(panel); Window win=dialog.getWindow(); if(win!=null){win.setBackgroundDrawableResource(android.R.color.transparent);win.setLayout((int)(getResources().getDisplayMetrics().widthPixels*0.86),-2);} dialog.show();
+    }
     @Override public void onBackPressed(){showDashboard();}
 
     static class QuestionBank{
