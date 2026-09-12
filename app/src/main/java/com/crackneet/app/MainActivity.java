@@ -26,7 +26,8 @@ public class MainActivity extends Activity {
     }
     int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
     TextView tv(String s,float z,int c,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(z);t.setTextColor(c);t.setTypeface(null,bold?1:0);t.setPadding(0,dp(5),0,dp(5));return t;}
-    GradientDrawable bg(int c,float r){GradientDrawable g=new GradientDrawable();g.setColor(c);g.setCornerRadius(dp((int)r));return g;}\n    void lift(View v,float z){v.setElevation(dp((int)z));}
+    GradientDrawable bg(int c,float r){GradientDrawable g=new GradientDrawable();g.setColor(c);g.setCornerRadius(dp((int)r));return g;}
+    void lift(View v,float z){v.setElevation(dp((int)z));}
     LinearLayout box(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);l.setPadding(dp(16),dp(12),dp(16),dp(12));return l;}
     Button btn(String s){Button b=new Button(this);b.setText(s);b.setTextSize(14);b.setTextColor(Color.WHITE);b.setAllCaps(false);b.setTypeface(null,1);b.setBackground(bg(GREEN,14));return b;}
 
