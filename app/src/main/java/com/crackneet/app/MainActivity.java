@@ -32,19 +32,29 @@ public class MainActivity extends Activity {
 
     void showSplash(){
         root.removeAllViews(); LinearLayout l=box(); l.setGravity(Gravity.CENTER); l.setBackgroundColor(DARK);
-        TextView a=tv("CRACKNEET",34,Color.WHITE,true);a.setGravity(Gravity.CENTER);l.addView(a,new LinearLayout.LayoutParams(-1,dp(90)));
-        TextView b=tv("NEET • JEE MAIN",15,Color.LTGRAY,false);b.setGravity(Gravity.CENTER);l.addView(b);
-        root.addView(l); new Handler().postDelayed(new Runnable(){public void run(){showWelcome();}},900);
+        TextView cap=tv("🎓",62,Color.WHITE,true);cap.setGravity(Gravity.CENTER);l.addView(cap,new LinearLayout.LayoutParams(-1,dp(82)));
+        TextView a=tv("Crack",34,Color.WHITE,true);a.setGravity(Gravity.CENTER);TextView n=tv("NEET",34,GREEN,true);n.setGravity(Gravity.CENTER);
+        LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER);brand.addView(a);brand.addView(n);l.addView(brand,new LinearLayout.LayoutParams(-1,dp(60)));
+        TextView sub=tv("Your NEET + JEE Preparation Companion",14,Color.rgb(200,220,220),false);sub.setGravity(Gravity.CENTER);l.addView(sub);
+        TextView tag=tv("PREPARE   •   PRACTICE   •   IMPROVE",11,GREEN,true);tag.setGravity(Gravity.CENTER);tag.setPadding(0,dp(24),0,0);l.addView(tag);
+        root.addView(l); new Handler().postDelayed(new Runnable(){public void run(){showWelcome();}},1200);
     }
     void showWelcome(){
-        root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER_HORIZONTAL);l.setPadding(dp(24),dp(30),dp(24),dp(24));
-        TextView logo=tv("CRACKNEET",30,DARK,true);logo.setGravity(Gravity.CENTER);l.addView(logo,new LinearLayout.LayoutParams(-1,dp(80)));
-        l.addView(tv("Welcome Back!",22,TEXT,true));l.addView(tv("Your NEET preparation companion",14,MUTED,false));
-        EditText email=new EditText(this);email.setHint("Email or Mobile Number");l.addView(email,new LinearLayout.LayoutParams(-1,dp(58)));
-        EditText pass=new EditText(this);pass.setHint("Password");pass.setInputType(129);l.addView(pass,new LinearLayout.LayoutParams(-1,dp(58)));
+        root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER_HORIZONTAL);l.setPadding(dp(26),dp(34),dp(26),dp(22));l.setBackgroundColor(BG);
+        TextView cap=tv("🎓",48,GREEN,true);cap.setGravity(Gravity.CENTER);l.addView(cap,new LinearLayout.LayoutParams(-1,dp(65)));
+        LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER);TextView cr=tv("Crack",31,DARK,true);TextView ne=tv("NEET",31,GREEN,true);brand.addView(cr);brand.addView(ne);l.addView(brand);
+        TextView welcome=tv("Welcome Back!",22,TEXT,true);welcome.setGravity(Gravity.CENTER);l.addView(welcome,new LinearLayout.LayoutParams(-1,dp(55)));
+        TextView info=tv("Your NEET journey continues here.",14,MUTED,false);info.setGravity(Gravity.CENTER);l.addView(info);
+        l.addView(tv("LOGIN TO CONTINUE",11,GREEN,true));
+        EditText email=new EditText(this);email.setHint("  Email or Mobile Number");email.setTextColor(TEXT);email.setHintTextColor(MUTED);email.setBackground(bg(Color.WHITE,14));LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,dp(56));ep.setMargins(0,dp(10),0,dp(6));l.addView(email,ep);
+        EditText pass=new EditText(this);pass.setHint("  Password");pass.setTextColor(TEXT);pass.setHintTextColor(MUTED);pass.setInputType(129);pass.setBackground(bg(Color.WHITE,14));l.addView(pass,new LinearLayout.LayoutParams(-1,dp(56)));
+        TextView forgot=tv("Forgot Password?",12,GREEN,true);forgot.setGravity(Gravity.RIGHT);l.addView(forgot);
         Button login=btn("Login");login.setOnClickListener(v->showDashboard());l.addView(login,new LinearLayout.LayoutParams(-1,dp(52)));
-        Button guest=btn("Continue as Guest");guest.setOnClickListener(v->showDashboard());l.addView(guest,new LinearLayout.LayoutParams(-1,dp(52)));
-        l.addView(tv("Don't have an account?  Sign Up",13,GREEN,true));root.addView(l);
+        TextView or=tv("──────────  OR  ──────────",12,MUTED,false);or.setGravity(Gravity.CENTER);l.addView(or,new LinearLayout.LayoutParams(-1,dp(44)));
+        Button google=btn("Continue with Google");google.setTextColor(TEXT);google.setBackground(bg(Color.WHITE,14));google.setOnClickListener(v->showDashboard());l.addView(google,new LinearLayout.LayoutParams(-1,dp(48)));
+        Button apple=btn("Continue with Apple");apple.setTextColor(TEXT);apple.setBackground(bg(Color.WHITE,14));apple.setOnClickListener(v->showDashboard());l.addView(apple,new LinearLayout.LayoutParams(-1,dp(48)));
+        TextView signup=tv("Don't have an account?  Sign Up",12,GREEN,true);signup.setGravity(Gravity.CENTER);l.addView(signup);
+        root.addView(l);
     }
     void base(String title,boolean back){
         root.removeAllViews();LinearLayout frame=new LinearLayout(this);frame.setOrientation(LinearLayout.VERTICAL);frame.setBackgroundColor(BG);
@@ -175,7 +185,23 @@ public class MainActivity extends Activity {
     void showNotes(){base("Short Notes",false);card("Biology","NCERT high-yield revision","Open",v->note("Biology Notes"));card("Chemistry","Reactions • Concepts • Formulae","Open",v->note("Chemistry Notes"));card("Physics","Formula sheet • Concepts","Open",v->note("Physics Notes"));}
     void note(String t){new AlertDialog.Builder(this).setTitle(t).setMessage("High-yield concepts, important facts, formulas and exam tips.").setPositiveButton("Done",null).show();}
     void showProgress(){base("Progress Report",false);card("Overall","Questions attempted • Accuracy • Tests","View",v->{});card("Physics","Improving • Track weak chapters","",v->{});card("Chemistry","Practice more difficult topics","",v->{});card("Biology","Strong performance","",v->{});}
-    void showProfile(){base("Profile",false);content.addView(tv("NEET Aspirant",24,DARK,true));card("Test History","Mock tests and scores","Open",v->showResult());card("Premium","Unlock complete test series and analytics","₹99/month",v->showPremium());card("Settings","Notifications • Theme • Account","Open",v->{});}
+    void showProfile(){
+        base("Profile",false);
+        LinearLayout head=box();head.setBackground(bg(DARK,20));head.setGravity(Gravity.CENTER_VERTICAL);LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);
+        TextView av=tv("AS",22,Color.WHITE,true);av.setGravity(Gravity.CENTER);av.setBackground(bg(GREEN,50));row.addView(av,new LinearLayout.LayoutParams(dp(62),dp(62)));
+        LinearLayout info=box();info.setPadding(dp(14),0,0,0);info.addView(tv("Aarav Sharma",20,Color.WHITE,true));info.addView(tv("NEET 2025 Aspirant",12,Color.rgb(200,225,220),false));info.addView(tv("Level 5  •  1,250 XP",11,GREEN,true));row.addView(info);head.addView(row);content.addView(head,new LinearLayout.LayoutParams(-1,dp(120)));
+        LinearLayout stats=new LinearLayout(this);statBox(stats,"🔥","Day Streak","7",GREEN);statBox(stats,"📝","Tests Taken","18",GREEN);statBox(stats,"🎯","Avg Accuracy","65%",GREEN);content.addView(stats);
+        content.addView(tv("My Learning",18,DARK,true));
+        card("My Performance","Accuracy, subject scores and weak topics","Open",v->showProgress());
+        card("Test History","All completed tests and scores","View",v->showAnalysisSafe());
+        card("Revision History","Recently practiced chapters and questions","View",v->showNotes());
+        content.addView(tv("Account",18,DARK,true));
+        card("Settings","Notifications • Theme • Account","Open",v->showSettings());
+        card("Premium","Unlock complete test series and advanced analytics","₹99 / month",v->showPremium());
+        card("Help & Support","FAQs • Contact support","Open",v->new AlertDialog.Builder(this).setTitle("Help & Support").setMessage("For support, please contact CrackNEET support.").setPositiveButton("OK",null).show());
+    }
+    void showAnalysisSafe(){if(test.size()>0)showAnalysis();else new AlertDialog.Builder(this).setTitle("Test History").setMessage("No completed test yet. Start a test to see your history and detailed analysis here.").setPositiveButton("Start Test",(d,w)->showSubjects()).show();}
+    void showSettings(){new AlertDialog.Builder(this).setTitle("Settings").setItems(new String[]{"Notifications","Dark Theme","Account","Logout"},(d,w)->{if(w==3)showWelcome();}).show();}
     void showPremium(){base("CrackNEET Pro",true);content.addView(tv("Premium Preparation",26,DARK,true));content.addView(tv("₹99 / month",24,GREEN,true));card("Premium Tests","Full mock + chapter tests","Unlock",v->{});card("Advanced Analytics","Weak topics + performance trend","Unlock",v->{});}
     void showDrawer(){final String[] items={"Home","Tests","Notes","Progress","Profile","Premium"};new AlertDialog.Builder(this).setTitle("CrackNEET").setItems(items,(d,w)->{if(w==0)showDashboard();else if(w==1)showSubjects();else if(w==2)showNotes();else if(w==3)showProgress();else if(w==4)showProfile();else showPremium();}).show();}
     @Override public void onBackPressed(){showDashboard();}
