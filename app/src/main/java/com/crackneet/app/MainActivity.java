@@ -338,6 +338,13 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         base("NCERT Question Practice",true);
         content.addView(tv("📖 NCERT Question Practice Corner",23,DARK,true));
         content.addView(tv("🎯 Line-by-line • NEET probability focused • Chapter-wise",13,MUTED,false));
+        content.addView(tv("📝 NCERT Short Notes",20,DARK,true));
+        content.addView(tv("Quick revision • Diagrams • Flow charts • NEET high-yield points",13,MUTED,false));
+        LinearLayout notes=new LinearLayout(this); notes.setGravity(Gravity.CENTER);
+        miniCard(notes,"⚛️","Physics","Short Notes",v->showNcertNotes("Physics"));
+        miniCard(notes,"🧪","Chemistry","Short Notes",v->showNcertNotes("Chemistry"));
+        miniCard(notes,"🧬","Biology","Short Notes",v->showNcertNotes("Biology"));
+        content.addView(notes);
         content.addView(tv("Choose one subject",15,DARK,true));
         LinearLayout s1=new LinearLayout(this); s1.setGravity(Gravity.CENTER);
         miniCard(s1,"⚛️","Physics","Class 11",v->showNcertChapter("Class 11","Physics"));
@@ -357,6 +364,44 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         card("NCERT In-text Variations","Same concept, changed values/options and fresh framing","Practice",v->startNcertSampleTest());
         card("NCERT Exemplar Practice","Higher-level concept and application questions","Practice",v->startNcertSampleTest());
     }
+    void showNcertNotes(String subject){
+        base("NCERT Short Notes • "+subject,true);
+        content.addView(tv("📚 Chapter-wise Short Notes",21,DARK,true));
+        content.addView(tv("Same CrackNEET design • NCERT concepts • NEET quick revision",13,MUTED,false));
+        String[] classes={"Class 11","Class 12"};
+        for(final String cls:classes){
+            card(cls+" • "+subject,"Open chapter-wise notes, diagrams and flow charts","Open",v->showNotesChapters(cls,subject));
+        }
+    }
+    void showNotesChapters(String cls,String subject){
+        base("Short Notes • "+cls+" • "+subject,true);
+        content.addView(tv("Select Chapter",20,DARK,true));
+        String[] chapters;
+        if(subject.equals("Biology")) chapters=cls.equals("Class 11")
+          ? new String[]{"The Living World","Biological Classification","Plant Kingdom","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Structural Organisation in Animals","Cell: The Unit of Life","Biomolecules","Cell Cycle and Cell Division","Transport in Plants","Mineral Nutrition","Photosynthesis in Higher Plants","Respiration in Plants","Plant Growth and Development","Digestion and Absorption","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and their Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration"}
+          : new String[]{"Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation"};
+        else if(subject.equals("Chemistry")) chapters=cls.equals("Class 11")
+          ? new String[]{"Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","Thermodynamics","Equilibrium","Redox Reactions","Organic Chemistry: Basic Principles","Hydrocarbons"}
+          : new String[]{"Solutions","Electrochemistry","Chemical Kinetics","The d-and f-Block Elements","Coordination Compounds","Haloalkanes and Haloarenes","Alcohols Phenols and Ethers","Aldehydes Ketones and Carboxylic Acids","Amines","Biomolecules"};
+        else chapters=cls.equals("Class 11")
+          ? new String[]{"Physical World","Units and Measurements","Motion in a Straight Line","Motion in a Plane","Laws of Motion","Work, Energy and Power","System of Particles and Rotational Motion","Gravitation","Mechanical Properties of Solids","Mechanical Properties of Fluids","Thermal Properties of Matter","Thermodynamics","Kinetic Theory","Oscillations","Waves"}
+          : new String[]{"Electric Charges and Fields","Electrostatic Potential and Capacitance","Current Electricity","Moving Charges and Magnetism","Magnetism and Matter","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics and Optical Instruments","Wave Optics","Dual Nature of Radiation and Matter","Atoms","Nuclei","Semiconductor Electronics: Materials, Devices and Simple Circuits"};
+        for(final String ch:chapters) card(ch,"NCERT short notes • flow chart • diagram • NEET facts","Read Notes",v->showNotePage(cls,subject,ch));
+    }
+    void showNotePage(String cls,String subject,String chapter){
+        base("Notes • "+chapter,true);
+        content.addView(tv("📌 NCERT High-Yield Notes",20,DARK,true));
+        content.addView(tv("Class: "+cls+"   |   Subject: "+subject,13,MUTED,false));
+        content.addView(tv("CORE CONCEPT",15,GREEN,true));
+        content.addView(tv("This chapter's notes are organized for rapid NEET revision from the NCERT concept sequence.",14,TEXT,false));
+        content.addView(tv("🔄 FLOW CHART",15,GREEN,true));
+        content.addView(tv("NCERT Concept → Key Definition → Mechanism/Relation → Important Exception → NEET Question",14,TEXT,true));
+        content.addView(tv("🧩 DIAGRAM / VISUAL REVISION",15,GREEN,true));
+        content.addView(tv("Diagram space • chapter-specific original educational visual will be placed here.",14,MUTED,false));
+        content.addView(tv("⭐ MUST REMEMBER",15,GREEN,true));
+        content.addView(tv("• NCERT terminology\n• High-yield facts\n• Formula / reaction / process where applicable\n• Common NEET confusion points",14,TEXT,false));
+    }
+
     void showNcertChapter(String cls,String subject){
         base("NCERT • "+cls+" • "+subject,true);
         content.addView(tv("Choose chapter",20,DARK,true));
