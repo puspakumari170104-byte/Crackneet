@@ -144,10 +144,10 @@ public class MainActivity extends Activity {
             Question q=current.get(i);
             String ans=(i<selectedAnswers.size()) ? q.options[selectedAnswers.get(i)] : "Not attempted";
             String correct=q.options[q.answer];
-            sb.append("Q").append(i+1).append(": ").append(q.text).append("\
-");
-            sb.append("Your answer: ").append(ans).append("\
-");
+            sb.append("Q").append(i+1).append(": ").append(q.text).append("\n");
+            sb.append("Your answer: ").append(ans).append("\n");
+            sb.append("Correct: ").append(correct).append("\n");
+            sb.append(q.solution).append("\n\n");
             sb.append("Correct: ").append(correct).append("\
 ");
             sb.append(q.solution).append("\
@@ -165,7 +165,7 @@ public class MainActivity extends Activity {
         progress.setText("Score: "+score+" / "+answered+" correct • "+current.size()+" questions");
         options.removeAllViews();
         result.setText("Accuracy: "+(answered==0?0:(score*100/answered))+"%");
-        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\
+        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\n\nTap Retry to practice again.");
 \
 Tap Retry to practice again.");
         Button review=new Button(this);
