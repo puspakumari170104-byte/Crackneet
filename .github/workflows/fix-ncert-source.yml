@@ -1,0 +1,36 @@
+name: Fix NCERT notes source
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fix literal newline escapes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('app/src/main/java/com/crackneet/app/MainActivity.java')
+          s=p.read_text()
+          bad='String noteText(String s,String ch){\\\\n        return NcertNotes.get(s,ch);\\\\n    }\\\\n    String noteFlow'
+          good='String noteText(String s,String ch){\n        return NcertNotes.get(s,ch);\n    }\n    String noteFlow'
+          if bad not in s:
+              print('Expected bad formatting not found; source may already be fixed.')
+              raise SystemExit(0)
+          s=s.replace(bad,good,1)
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/java/com/crackneet/app/MainActivity.java
+          git commit -m 'Fix NCERT notes Java formatting'
+          git push origin HEAD:main
