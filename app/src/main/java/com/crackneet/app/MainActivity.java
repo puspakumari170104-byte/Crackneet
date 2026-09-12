@@ -212,6 +212,19 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         card("🔒 Privacy","Practice data and app preferences","View",v->new AlertDialog.Builder(this).setTitle("Privacy").setMessage("Practice progress is stored locally in this prototype.").setPositiveButton("OK",null).show());
         card("↪ Logout","Return to the welcome screen","Logout",v->showWelcome());
     }
+    void showQuestionBank(){
+        base("Question Bank",true);
+        content.addView(tv("40,000+ Practice Questions",24,DARK,true));
+        content.addView(tv("NEET + JEE Main • PYQ Pattern • Mixed Practice",13,MUTED,false));
+        String[] types={"All Types","MCQ","PYQ Based","Assertion-Reason","Statement Based","Match the Column","Numerical"};
+        for(String type:types){
+            int count=0; for(Question q:bank) if(type.equals("All Types")||q.type.equals(type)) count++;
+            card(type.equals("All Types")?"🔥 All Questions":"📝 "+type,
+                    count+" questions • "+(type.equals("All Types")?"NEET + JEE Main":"Mixed chapters"),
+                    "Practice",v->{exam=exam.equals("NEET")?"JEE Main":"NEET";startTest();});
+        }
+    }
+
     void showPremium(){
         base("CrackNEET Pro",true);
         LinearLayout hero=box();hero.setBackgroundResource(R.drawable.hero_gradient);hero.setPadding(dp(20),dp(20),dp(20),dp(20));
