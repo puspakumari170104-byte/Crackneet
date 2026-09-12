@@ -13,6 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Verify NCERT notes source
+        run: |
+          test -s app/src/main/java/com/crackneet/app/NcertNotes.java
+          grep -q 'class NcertNotes' app/src/main/java/com/crackneet/app/NcertNotes.java
+          echo "NCERT chapter-wise notes source verified"
+
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
