@@ -128,7 +128,7 @@ public class MainActivity extends Activity {
         TextView qt=tv(q.text,19,TEXT,true);qt.setPadding(0,dp(10),0,dp(12));head.addView(qt);content.addView(head,new LinearLayout.LayoutParams(-1,dp(170)));
         content.addView(tv("Choose the correct answer",15,DARK,true));
         final RadioGroup rg=new RadioGroup(this);rg.setPadding(0,dp(4),0,dp(4));
-        for(int i=0;i<q.options.length;i++){RadioButton r=new RadioButton(this);r.setText((char)('A'+i)+"   "+q.options[i]);r.setTextSize(15);r.setTextColor(TEXT);r.setGravity(Gravity.CENTER_VERTICAL);r.setPadding(dp(12),0,dp(8),0);GradientDrawable obg=bg(Color.WHITE,14);r.setBackground(obg);RadioGroup.LayoutParams rp=new RadioGroup.LayoutParams(-1,dp(58));rp.setMargins(0,dp(5),0,dp(5));rg.addView(r,rp);}
+        for(int i=0;i<q.options.length;i++){RadioButton r=new RadioButton(this);r.setId(View.generateViewId());r.setText((char)('A'+i)+"   "+q.options[i]);r.setTextSize(15);r.setTextColor(TEXT);r.setGravity(Gravity.CENTER_VERTICAL);r.setPadding(dp(12),0,dp(8),0);GradientDrawable obg=bg(Color.WHITE,14);r.setBackground(obg);RadioGroup.LayoutParams rp=new RadioGroup.LayoutParams(-1,dp(58));rp.setMargins(0,dp(5),0,dp(5));rg.addView(r,rp);}
         content.addView(rg);
         LinearLayout actions=new LinearLayout(this);actions.setGravity(Gravity.CENTER_VERTICAL);actions.setPadding(0,dp(8),0,dp(4));
         Button mark=btn(marked.contains(qIndex)?"★  Marked":"☆  Mark for Review");mark.setTextColor(DARK);mark.setBackground(bg(Color.WHITE,14));actions.addView(mark,new LinearLayout.LayoutParams(0,dp(50),1));
