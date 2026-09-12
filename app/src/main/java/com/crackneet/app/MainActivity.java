@@ -230,7 +230,7 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         LinearLayout hero=box();hero.setBackgroundResource(R.drawable.hero_gradient);hero.setPadding(dp(20),dp(20),dp(20),dp(20));
         hero.addView(tv("✦  CRACKNEET PRO",13,Color.WHITE,true));hero.addView(tv("Serious preparation. Smarter practice.",22,Color.WHITE,true));hero.addView(tv("₹99 / month  •  Cancel anytime",12,Color.rgb(220,240,235),false));content.addView(hero);
         content.addView(tv("Everything you need",19,DARK,true));
-        card("🚀 Full Mock Tests","Complete NEET + JEE Main timed tests","Unlock Pro",v->premiumDialog("Full Mock Tests"));
+        card("🚀 Full Mock Tests","Complete NEET + JEE Main timed tests","Start Mock",v->startTest());
         card("🧠 Advanced Question Bank","PYQ-based + Assertion-Reason + Statement + Match Column","Unlock Pro",v->premiumDialog("Advanced Question Bank"));
         card("📊 Advanced Analytics","Weak chapters, accuracy and performance trends","Unlock Pro",v->premiumDialog("Advanced Analytics"));
         card("⭐ Smart Revision","Revision from attempted questions","Unlock Pro",v->premiumDialog("Smart Revision"));
