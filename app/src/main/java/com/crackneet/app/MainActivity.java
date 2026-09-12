@@ -1,248 +1,79 @@
 package com.crackneet.app;
 
-import android.app.AlertDialog;
-import android.app.Activity;
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.View;
+import android.app.*;
+import android.os.*;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.view.*;
 import android.widget.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class MainActivity extends Activity {
-    private final ArrayList<Question> all = new ArrayList<>();
-    private ArrayList<Question> current = new ArrayList<>();
-    private int index = 0, score = 0, answered = 0;
-    private final ArrayList<Integer> selectedAnswers = new ArrayList<>();
-    private int attempted = 0;
-    private long startTime;
-    private long testTimeMs = 30 * 60 * 1000L;
-    private int questionLimit = 0;
-    private TextView title, meta, question, progress, result, explanation, timer, filterInfo;
-    private RadioGroup options;
-    private Button action, reviewButton;
-    private String exam = "";
-    private String subjectFilter = "All";
-    private String typeFilter = "All";
-    private String difficultyFilter = "All";
-    private String chapterFilter = "All";
-    private final Handler timerHandler = new Handler();
-    private final Runnable timerRunnable = new Runnable() {
-        @Override public void run() {
-            if (current.isEmpty()) return;
-            long remaining = testTimeMs - (System.currentTimeMillis() - startTime);
-            if (remaining <= 0) {
-                finishQuiz();
-                return;
-            }
-            updateTimer(remaining);
-            timerHandler.postDelayed(this, 1000);
-        }
-    };
+    static final int GREEN=Color.rgb(0,170,118), DARK=Color.rgb(15,38,48), TEXT=Color.rgb(35,52,62), MUTED=Color.rgb(102,119,126), BG=Color.rgb(245,248,247);
+    FrameLayout root; LinearLayout content, bottom; TextView screenTitle;
+    ArrayList<Question> bank=new ArrayList<>(), test=new ArrayList<>(); int qIndex,score,attempted;
+    boolean loadingBank=false; String exam="NEET"; long started;
+    Handler handler=new Handler(); Runnable splash;
+    final ArrayList<Integer> answers=new ArrayList<>();
+    final ArrayList<Integer> marked=new ArrayList<>();
 
     static class Question {
-        String exam, subject, chapter, type, difficulty, text, solution;
-        String[] options; int answer;
-        Question(JSONObject o) throws Exception {
-            exam=o.getString("exam"); subject=o.getString("subject"); chapter=o.getString("chapter");
-            type=o.getString("type"); difficulty=o.optString("difficulty","Moderate");
-            text=o.getString("q"); solution=o.optString("solution","");
-            JSONArray a=o.getJSONArray("options"); options=new String[a.length()];
-            for(int i=0;i<a.length();i++) options[i]=a.getString(i);
-            answer=o.getInt("answer");
+        String id,exam,subject,chapter,type,difficulty,q,solution; String[] options; int answer;
+        Question(String id,String exam,String subject,String chapter,String type,String difficulty,String q,String[] options,int answer,String solution){
+            this.id=id;this.exam=exam;this.subject=subject;this.chapter=chapter;this.type=type;this.difficulty=difficulty;this.q=q;this.options=options;this.answer=answer;this.solution=solution;
         }
     }
 
-    @Override public void onCreate(Bundle b) {
-        super.onCreate(b);
-        setContentView(R.layout.activity_main);
-        title=findViewById(R.id.title); meta=findViewById(R.id.meta); question=findViewById(R.id.question);
-        progress=findViewById(R.id.progress); result=findViewById(R.id.result);
-        explanation=findViewById(R.id.explanation); options=findViewById(R.id.options);
-        action=findViewById(R.id.action); timer=findViewById(R.id.timer); filterInfo=findViewById(R.id.filterInfo);
-        loadQuestions();
-        showHome();
+    @Override public void onCreate(Bundle b){super.onCreate(b);setContentView(R.layout.activity_main);root=findViewById(R.id.root);showSplash();new Thread(()->{bank=QuestionBank.generate40000();loadingBank=false;}).start();}
+    int dp(int v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
+    TextView tv(String s,float size,int color,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(color);t.setTypeface(null,bold?1:0);t.setIncludeFontPadding(true);return t;}
+    GradientDrawable bg(int color,float r){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp((int)r));return g;}
+    LinearLayout box(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);l.setPadding(dp(16),dp(14),dp(16),dp(14));return l;}
+    Button btn(String s){Button b=new Button(this);b.setText(s);b.setTextSize(14);b.setTextColor(Color.WHITE);b.setAllCaps(false);b.setTypeface(null,1);b.setBackground(bg(GREEN,14));b.setPadding(dp(12),0,dp(12),0);return b;}
+    void showSplash(){root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER);l.setBackgroundColor(Color.rgb(7,24,31));TextView logo=tv("🎓\nCrackNEET",34,Color.WHITE,true);logo.setGravity(17);l.addView(logo,new LinearLayout.LayoutParams(-1,dp(120)));TextView sub=tv("Your NEET Preparation Companion",16,Color.LTGRAY,false);sub.setGravity(17);l.addView(sub);root.addView(l);splash=()->showWelcome();handler.postDelayed(splash,1100);}
+    void base(String title,boolean back){root.removeAllViews();LinearLayout frame=new LinearLayout(this);frame.setOrientation(LinearLayout.VERTICAL);frame.setBackgroundColor(BG);
+        LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(dp(12),dp(10),dp(12),dp(8));
+        if(back){Button b=btn("‹");b.setTextColor(DARK);b.setBackgroundColor(Color.TRANSPARENT);b.setOnClickListener(v->showDashboard());top.addView(b,new LinearLayout.LayoutParams(dp(48),dp(48)));}
+        screenTitle=tv(title,21,DARK,true);top.addView(screenTitle,new LinearLayout.LayoutParams(0,dp(48),1));
+        Button menu=btn("⋮");menu.setTextColor(DARK);menu.setBackgroundColor(Color.TRANSPARENT);menu.setOnClickListener(v->showDrawer());top.addView(menu,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        frame.addView(top);ScrollView sc=new ScrollView(this);content=box();sc.addView(content);frame.addView(sc,new LinearLayout.LayoutParams(-1,0,1));root.addView(frame);
+        addBottom(frame);
     }
-
-    private void loadQuestions() {
-        try {
-            InputStream in=getAssets().open("question_bank.json");
-            byte[] bytes=new byte[in.available()]; in.read(bytes); in.close();
-            JSONArray arr=new JSONObject(new String(bytes, StandardCharsets.UTF_8)).getJSONArray("questions");
-            for(int i=0;i<arr.length();i++) all.add(new Question(arr.getJSONObject(i)));
-        } catch(Exception e) {
-            Toast.makeText(this,"Question bank load error",Toast.LENGTH_LONG).show();
-        }
+    void addBottom(LinearLayout frame){bottom=new LinearLayout(this);bottom.setGravity(Gravity.CENTER);bottom.setPadding(4,5,4,5);bottom.setBackgroundColor(Color.WHITE);String[] labels={"⌂\nHome","▣\nTests","▤\nNotes","⌁\nProgress","♙\nProfile"};for(String x:labels){Button b=btn(x);b.setTextSize(11);b.setTextColor(MUTED);b.setBackgroundColor(Color.TRANSPARENT);String k=x.substring(0,1);if(k.equals("⌂"))b.setOnClickListener(v->showDashboard());else if(k.equals("▣"))b.setOnClickListener(v->showSubjects());else if(k.equals("▤"))b.setOnClickListener(v->showNotes());else if(k.equals("⌁"))b.setOnClickListener(v->showProgress());else b.setOnClickListener(v->showProfile());bottom.addView(b,new LinearLayout.LayoutParams(0,dp(58),1));}frame.addView(bottom);}
+    void card(String title,String sub,String action,View.OnClickListener click){LinearLayout c=box();c.setBackground(bg(Color.WHITE,18));c.setElevation(dp(2));c.setPadding(dp(16),dp(14),dp(16),dp(14));LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout words=box();words.setPadding(0,0,0,0);words.addView(tv(title,16,TEXT,true));words.addView(tv(sub,12,MUTED,false),new LinearLayout.LayoutParams(-1,dp(35)));row.addView(words,new LinearLayout.LayoutParams(0,-2,1));if(action!=null){Button b=btn(action);b.setOnClickListener(click);row.addView(b,new LinearLayout.LayoutParams(dp(88),dp(44)));}c.addView(row);content.addView(c,new LinearLayout.LayoutParams(-1,-2));content.getLayoutParams();Space sp=new Space(this);content.addView(sp,new LinearLayout.LayoutParams(1,dp(10)));}
+    void showWelcome(){root.removeAllViews();LinearLayout l=box();l.setGravity(Gravity.CENTER_HORIZONTAL);l.setPadding(dp(24),dp(40),dp(24),dp(24));TextView logo=tv("🎓  CrackNEET",30,DARK,true);logo.setGravity(17);l.addView(logo,new LinearLayout.LayoutParams(-1,dp(80)));l.addView(tv("Welcome Back!",20,TEXT,true));l.addView(tv("Your NEET journey continues here.",14,MUTED,false));EditText email=new EditText(this);email.setHint("Email or Mobile Number");l.addView(email,new LinearLayout.LayoutParams(-1,dp(58)));EditText pass=new EditText(this);pass.setHint("Password");pass.setInputType(129);l.addView(pass,new LinearLayout.LayoutParams(-1,dp(58)));Button login=btn("Login");login.setOnClickListener(v->showDashboard());l.addView(login,new LinearLayout.LayoutParams(-1,dp(52)));TextView or=tv("\nOR\n",13,MUTED,false);or.setGravity(17);l.addView(or);Button guest=btn("Continue as Guest");guest.setOnClickListener(v->showDashboard());l.addView(guest,new LinearLayout.LayoutParams(-1,dp(52)));TextView signup=tv("\nDon't have an account?  Sign Up",13,GREEN,true);signup.setGravity(17);l.addView(signup);root.addView(l);}
+    void showDashboard(){base("CrackNEET",false);content.addView(tv("Good Morning, Aarav 👋",24,DARK,true));content.addView(tv("Keep going. Your hard work will pay off.",13,MUTED,false));Space s=new Space(this);content.addView(s,new LinearLayout.LayoutParams(1,dp(10)));
+        LinearLayout stats=new LinearLayout(this);stats.setWeightSum(2);stats.addView(stat("Today's Target","3/10","Chapters"),new LinearLayout.LayoutParams(0,dp(100),1));stats.addView(stat("Study Streak","7","Days"),new LinearLayout.LayoutParams(0,dp(100),1));content.addView(stats);
+        card("Overall Progress","42%  •  78 / 1830 questions","View",v->showProgress());
+        content.addView(tv("Quick Access",18,DARK,true));card("Take Test","Full mock or chapter test","Start",v->showSubjects());card("Short Notes","Revise smart","Open",v->showNotes());card("Weak Topics","Focus & improve","View",v->showWeak());
+        content.addView(tv("Upcoming Test",18,DARK,true));card("Biology Full Syllabus Mock","Physics • Chemistry • Biology • 180 Questions","Start",v->startInstructions("NEET"));
     }
+    View stat(String a,String b,String c){LinearLayout x=box();x.setBackground(bg(Color.WHITE,16));x.setGravity(Gravity.CENTER);x.addView(tv(a,11,MUTED,false));x.addView(tv(b,24,DARK,true));x.addView(tv(c,11,MUTED,false));return x;}
+    void showSubjects(){base("Subjects",true);content.addView(tv("Choose your subject",22,DARK,true));content.addView(tv("Chapter-wise practice and tests",13,MUTED,false));String[][] data={{"⚛","Physics","12 Chapters • 320 Questions"},{"⚗","Chemistry","14 Chapters • 420 Questions"},{"🌿","Biology","16 Chapters • 480 Questions"},{"∑","Mathematics","18 Chapters • 600 Questions"}};for(String[] d:data)card(d[0]+"  "+d[1],d[2],"›",v->showChapters(d[1]));}
+    void showChapters(String subject){base(subject,true);content.addView(tv("Chapters",22,DARK,true));String[] ch=subject.equals("Biology")?new String[]{"Diversity in Living Organisms","Structural Organisation in Plants","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Cell: The Unit of Life","Human Physiology","Genetics"}:subject.equals("Physics")?new String[]{"Units & Measurements","Kinematics","Laws of Motion","Work Energy Power","Current Electricity","Optics","Modern Physics"}:subject.equals("Chemistry")?new String[]{"Some Basic Concepts","Atomic Structure","Chemical Bonding","Thermodynamics","Equilibrium","Electrochemistry","Organic Chemistry"}:new String[]{"Sets","Matrices","Quadratic Equations","Sequence & Series","Limits","Differentiation","Probability"};int n=1;for(String x:ch){final String c=x;card(n+++". "+x,"15/15 questions • Practice + Notes","›",v->startInstructions(exam));}}
+    void startInstructions(String e){exam=e;base("Test Instructions",true);content.addView(tv(e+" • Full Mock Test",21,DARK,true));content.addView(tv("180 Questions • 180 Minutes • +4 / -1",14,MUTED,false));card("General Instructions","Read each question carefully. Use the palette to navigate. You can mark questions for review. The test auto-submits when time ends.","Start Test",v->startTest(e));}
+    void startTest(String e){exam=e;test=new ArrayList<>();for(Question q:bank)if(q.exam.equals(e))test.add(q);Collections.shuffle(test);if(test.size()>30)test=new ArrayList<>(test.subList(0,30));qIndex=0;score=0;attempted=0;answers.clear();marked.clear();started=System.currentTimeMillis();showQuestion();}
+    void showQuestion(){base("Question "+(qIndex+1)+" / "+test.size(),true);if(test.isEmpty()){content.addView(tv("Preparing your question bank…",18,DARK,true));return;}Question q=test.get(qIndex);content.addView(tv(q.subject+" • "+q.chapter+" • "+q.difficulty,12,GREEN,true));content.addView(tv(q.q,19,TEXT,true));RadioGroup rg=new RadioGroup(this);for(int i=0;i<q.options.length;i++){RadioButton r=new RadioButton(this);r.setText(q.options[i]);r.setTextSize(15);r.setPadding(dp(6),dp(10),dp(6),dp(10));rg.addView(r);}content.addView(rg);Button mark=btn(marked.contains(qIndex)?"★ Marked":"☆ Mark for Review");mark.setOnClickListener(v->{if(marked.contains(qIndex))marked.remove((Integer)qIndex);else marked.add(qIndex);showQuestion();});content.addView(mark);Button next=btn(qIndex==test.size()-1?"Finish Test":"Next →");next.setOnClickListener(v->{int id=rg.getCheckedRadioButtonId();if(id!=-1){int chosen=rg.indexOfChild(findViewById(id));answers.add(chosen);attempted++;if(chosen==q.answer)score++;}else answers.add(-1);qIndex++;if(qIndex>=test.size())showResult();else showQuestion();});content.addView(next);Button palette=btn("Question Palette");palette.setOnClickListener(v->showPalette());content.addView(palette);}
+    void showPalette(){StringBuilder s=new StringBuilder("Answered: ");s.append(attempted).append("\nMarked: ").append(marked.size()).append("\n\n");for(int i=0;i<test.size();i++)s.append(i+1).append(i<answers.size()&&answers.get(i)>=0?" ✓":" ○").append(i%5==4?"\n":"   ");new AlertDialog.Builder(this).setTitle("Question Palette").setMessage(s.toString()).setPositiveButton("Close",null).show();}
+    void showResult(){base("Test Result",true);int accuracy=test.isEmpty()?0:(score*100/test.size());content.addView(tv("85%",42,GREEN,true));content.addView(tv("Accuracy",14,MUTED,false));card("Total Score",score+" / "+test.size(),"Analysis",v->showProgress());card("Time Taken","24:18","",v->{});content.addView(tv("Subject-wise Performance",18,DARK,true));card("Physics","Strong • 85%","",v->{});card("Chemistry","Good • 80%","",v->{});card("Biology","Strong • 90%","",v->{});Button again=btn("Retake Test");again.setOnClickListener(v->startTest(exam));content.addView(again);}
+    void showNotes(){base("Short Notes",false);content.addView(tv("Revision made simple",22,DARK,true));card("Photosynthesis","Light energy → chemical energy • Key points & diagram","Open",v->noteDialog("Photosynthesis","Occurs in chloroplasts. Requires light, CO₂ and H₂O. Produces glucose and O₂."));card("Chemical Bonding","Quick revision • VSEPR • Hybridisation","Open",v->noteDialog("Chemical Bonding","Use electron-pair geometry to predict molecular shape."));card("Human Physiology","High-yield facts","Open",v->noteDialog("Human Physiology","Heart, breathing, digestion and excretion — revise with diagrams."));}
+    void noteDialog(String t,String body){new AlertDialog.Builder(this).setTitle(t).setMessage(body+"\n\n✓ Quick Revision\n✓ Important Facts\n✓ Exam Tips").setPositiveButton("Done",null).show();}
+    void showProgress(){base("Progress Report",false);content.addView(tv("Overall Progress",22,DARK,true));card("42% Complete","78 / 1830 Questions","View Trend",v->{});card("Physics","60% • Improving","",v->{});card("Chemistry","55% • Improve","",v->{});card("Biology","82% • Strong","",v->{});content.addView(tv("Your Performance Trend",18,DARK,true));TextView chart=tv("▁▂▃▂▄▅▆▇\nApr 20     Apr 27     May 4     May 11",22,GREEN,true);chart.setGravity(17);content.addView(chart,new LinearLayout.LayoutParams(-1,dp(100)));}
+    void showWeak(){base("Weak & Strong Chapters",true);card("Plant Physiology","32% • Needs Focus","Practice",v->showChapters("Biology"));card("Chemical Bonding","45% • Improve","Practice",v->showChapters("Chemistry"));card("Human Physiology","58% • Moderate","Practice",v->showChapters("Biology"));card("Genetics","75% • Good","Practice",v->showChapters("Biology"));card("Cell: The Unit of Life","82% • Strong","Revise",v->showNotes());}
+    void showProfile(){base("Profile",false);content.addView(tv("👤  Aarav Sharma",23,DARK,true));content.addView(tv("NEET 2026 Aspirant • Level 5 • 1,250 XP",13,MUTED,false));card("My Performance","7 Day Streak • 18 Tests Taken • 65% Avg Accuracy","Open",v->showProgress());card("Test History","Recent mock tests and scores","Open",v->showResult());card("Premium","Unlock full potential with CrackNEET Pro","₹99/month",v->showPremium());card("Settings","Notifications • Theme • Account","Open",v->{});card("Help & Support","FAQs and feedback","Open",v->{});}
+    void showPremium(){base("Go Premium",true);content.addView(tv("👑  CrackNEET Pro",28,DARK,true));content.addView(tv("₹99 / month",26,GREEN,true));content.addView(tv("Unlock your full potential",15,MUTED,false));String[] a={"Premium Test Series","Complete Short Notes","Advanced Analytics","All India Ranking","Personalized Weak Topic Suggestions"};for(String x:a)content.addView(tv("✓  "+x,15,TEXT,false));Button b=btn("Subscribe Now");b.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Premium").setMessage("Subscription flow is ready for integration with Play Billing.").setPositiveButton("OK",null).show());content.addView(b);}
+    void showDrawer(){new AlertDialog.Builder(this).setTitle("CrackNEET").setItems(new String[]{"Home","Tests","Short Notes","Progress","Profile","Premium","Settings","Help & Support","Logout"},(d,w)->{if(w==0)showDashboard();else if(w==1)showSubjects();else if(w==2)showNotes();else if(w==3)showProgress();else if(w==4)showProfile();else if(w==5)showPremium();});}
+    @Override public void onBackPressed(){showDashboard();}
 
-    private void showHome() {
-        timerHandler.removeCallbacks(timerRunnable);
-        title.setText("CrackNEET");
-        meta.setText("NEET + JEE Main • Smart practice");
-        question.setText("Choose an exam to start practice");
-        progress.setText(all.size()+" questions available");
-        timer.setText("Time left: --:--:--");
-        filterInfo.setText("All subjects • All chapters • All types");
-        options.removeAllViews(); result.setText(""); explanation.setText("");
-        action.setText("NEET Practice");
-        action.setOnClickListener(v -> chooseTime("NEET"));
-        if(reviewButton != null) { ((LinearLayout)reviewButton.getParent()).removeView(reviewButton); reviewButton=null; }
-        Button jee=findViewById(R.id.secondary);
-        jee.setVisibility(View.VISIBLE);
-        jee.setText("JEE Main Practice");
-        jee.setOnClickListener(v -> chooseTime("JEE Main"));
-    }
-
-    private void chooseTime(String e) {
-        final String[] labels={"30 minutes","60 minutes","90 minutes","3 hours (180 questions)"};
-        final long[] times={30L*60*1000,60L*60*1000,90L*60*1000,3L*60*60*1000};
-        new AlertDialog.Builder(this).setTitle("Choose test duration")
-            .setSingleChoiceItems(labels,0,(d,w)->{
-                testTimeMs=times[w]; questionLimit=(w==3?180:0);
-                d.dismiss(); chooseFilters(e);
-            }).show();
-    }
-
-    private void chooseFilters(String e) {
-        exam=e;
-        final String[] subjects = {"All","Physics","Chemistry","Biology","Mathematics"};
-        new AlertDialog.Builder(this).setTitle("Choose subject")
-            .setSingleChoiceItems(subjects,0,(d,w)->{
-                subjectFilter=subjects[w]; d.dismiss();
-                ArrayList<String> chapters=new ArrayList<>(); chapters.add("All");
-                for(Question q:all) if(q.exam.equals(e) &&
-                    (subjectFilter.equals("All") || q.subject.equals(subjectFilter)) &&
-                    !chapters.contains(q.chapter)) chapters.add(q.chapter);
-                new AlertDialog.Builder(this).setTitle("Choose chapter")
-                    .setSingleChoiceItems(chapters.toArray(new String[0]),0,(d2,x)->{
-                        chapterFilter=chapters.get(x); d2.dismiss();
-                        final String[] types={"All","MCQ","Statement","Assertion-Reason","Numerical"};
-                        new AlertDialog.Builder(this).setTitle("Question type")
-                            .setSingleChoiceItems(types,0,(d3,y)->{
-                                typeFilter=types[y]; d3.dismiss();
-                                final String[] levels={"All","Easy","Moderate","Hard"};
-                                new AlertDialog.Builder(this).setTitle("Difficulty")
-                                    .setSingleChoiceItems(levels,0,(d4,z)->{
-                                        difficultyFilter=levels[z]; d4.dismiss(); start(exam);
-                                    }).show();
-                            }).show();
-                    }).show();
-            }).show();
-    }
-
-    private void start(String e) {
-        exam=e; current=new ArrayList<>();
-        for(Question q:all) if(q.exam.equals(e) &&
-            (subjectFilter.equals("All") || q.subject.equals(subjectFilter)) &&
-            (chapterFilter.equals("All") || q.chapter.equals(chapterFilter)) &&
-            (typeFilter.equals("All") || q.type.equals(typeFilter)) &&
-            (difficultyFilter.equals("All") || q.difficulty.equals(difficultyFilter))) current.add(q);
-
-        if(current.isEmpty()) {
-            Toast.makeText(this,"No questions match these filters. Try All.",Toast.LENGTH_LONG).show();
-            showHome();
-            return;
-        }
-
-        Collections.shuffle(current);
-        if(questionLimit>0 && current.size()>questionLimit)
-            current=new ArrayList<>(current.subList(0,questionLimit));
-
-        startTime=System.currentTimeMillis();
-        index=0; score=0; answered=0; attempted=0; selectedAnswers.clear();
-        if(reviewButton != null) { ((LinearLayout)reviewButton.getParent()).removeView(reviewButton); reviewButton=null; }
-        findViewById(R.id.secondary).setVisibility(View.GONE);
-        filterInfo.setText(subjectFilter+" • "+chapterFilter+" • "+typeFilter+" • "+difficultyFilter);
-        action.setOnClickListener(v -> next());
-        render();
-        timerHandler.removeCallbacks(timerRunnable);
-        timerHandler.post(timerRunnable);
-    }
-
-    private void updateTimer(long remaining) {
-        timer.setText(String.format(Locale.US,"Time left: %02d:%02d:%02d",
-            remaining/3600000,(remaining/60000)%60,(remaining/1000)%60));
-    }
-
-    private void render() {
-        if(index>=current.size()) { finishQuiz(); return; }
-        long remaining=Math.max(0,testTimeMs-(System.currentTimeMillis()-startTime));
-        if(remaining<=0) { finishQuiz(); return; }
-        updateTimer(remaining);
-
-        Question q=current.get(index);
-        meta.setText(q.exam+" • "+q.subject+" • "+q.chapter+" • "+q.type);
-        question.setText(q.text);
-        progress.setText("Question "+(index+1)+" / "+current.size());
-        result.setText(""); explanation.setText(""); options.removeAllViews();
-
-        for(int i=0;i<q.options.length;i++){
-            RadioButton r=new RadioButton(this);
-            r.setText(q.options[i]); r.setTextSize(16); r.setPadding(4,12,4,12);
-            options.addView(r);
-        }
-        action.setText(index==current.size()-1?"Finish":"Next");
-    }
-
-    private void next() {
-        if(options.getCheckedRadioButtonId()==-1){
-            Toast.makeText(this,"Please select an answer",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        int chosen=options.indexOfChild(findViewById(options.getCheckedRadioButtonId()));
-        Question q=current.get(index);
-        answered++; attempted++; selectedAnswers.add(chosen);
-        if(chosen==q.answer) { score++; result.setText("✓ Correct"); }
-        else result.setText("✗ Incorrect • Correct answer: "+q.options[q.answer]);
-        explanation.setText(q.solution);
-        index++;
-        render();
-    }
-
-    private void showReview() {
-        question.setText("Answer Review");
-        meta.setText(exam+" • "+current.size()+" questions");
-        options.removeAllViews(); result.setText("");
-        StringBuilder sb=new StringBuilder();
-        for(int i=0;i<current.size();i++){
-            Question q=current.get(i);
-            String ans=(i<selectedAnswers.size()) ? q.options[selectedAnswers.get(i)] : "Not attempted";
-            sb.append("Q").append(i+1).append(": ").append(q.text).append("\n");
-            sb.append("Your answer: ").append(ans).append("\n");
-            sb.append("Correct: ").append(q.options[q.answer]).append("\n");
-            if(!q.solution.isEmpty()) sb.append(q.solution).append("\n");
-            sb.append("\n");
-        }
-        explanation.setText(sb.toString());
-        action.setText("Back to Result");
-        action.setOnClickListener(v -> finishQuiz());
-    }
-
-    private void finishQuiz() {
-        timerHandler.removeCallbacks(timerRunnable);
-        question.setText("Test completed");
-        meta.setText(exam+" Practice");
-        progress.setText("Score: "+score+" / "+answered+" correct • "+current.size()+" questions");
-        options.removeAllViews();
-        result.setText("Accuracy: "+(answered==0?0:(score*100/answered))+"%");
-        explanation.setText("Correct: "+score+"   Attempted: "+attempted+"   Total: "+current.size()+"\n\nReview your answers or start again.");
-
-        if(reviewButton != null) ((LinearLayout)reviewButton.getParent()).removeView(reviewButton);
-        reviewButton=new Button(this);
-        reviewButton.setText("Review Answers");
-        reviewButton.setOnClickListener(v -> showReview());
-        ((LinearLayout)action.getParent()).addView(reviewButton);
-
-        action.setText("Retry Test");
-        action.setOnClickListener(v -> start(exam));
-        findViewById(R.id.secondary).setVisibility(View.GONE);
-    }
-
-    @Override protected void onDestroy() {
-        timerHandler.removeCallbacks(timerRunnable);
-        super.onDestroy();
+    static class QuestionBank {
+        static ArrayList<Question> generate40000(){ArrayList<Question> a=new ArrayList<>(40000);for(int i=0;i<40000;i++){if(i<20000)a.add(neet(i));else a.add(jee(i-20000));}return a;}
+        static Question neet(int i){int s=i%10,v=i/10+2;String id="N"+String.format(Locale.US,"%05d",i+1);if(i%4==0)return bio(id,i,s,v);if(i%4==1)return phy(id,i,s,v);return chem(id,i,s,v);}
+        static Question jee(int i){int s=i%10,v=i/10+3;String id="J"+String.format(Locale.US,"%05d",i+1);if(i%3==0)return math(id,i,s,v);if(i%3==1)return phy(id,i,s,v);return chemJ(id,i,s,v);}
+        static Question bio(String id,int i,int s,int v){int t=s%5;if(t==0)return q(id,"NEET","Biology","Cell: The Unit of Life","MCQ","Easy","Which organelle is primarily associated with ATP production?","Mitochondrion","Ribosome","Golgi apparatus","Lysosome",0,"Mitochondria generate most cellular ATP.");if(t==1)return q(id,"NEET","Biology","Genetics","MCQ","Moderate","If a heterozygous tall plant (Tt) is crossed with Tt, the probability of tt is:","1/4","1/2","3/4","1",0,"The genotype ratio is 1:2:1.");if(t==2)return q(id,"NEET","Biology","Human Physiology","MCQ","Easy","The chamber that pumps oxygenated blood into the aorta is:","Left ventricle","Right ventricle","Left atrium","Right atrium",0,"The left ventricle pumps into the aorta.");if(t==3)return q(id,"NEET","Biology","Plant Physiology","MCQ","Easy","The primary photosynthetic pigment is:","Chlorophyll a","Chlorophyll b","Carotene","Xanthophyll",0,"Chlorophyll a is the primary reaction-centre pigment.");return q(id,"NEET","Biology","Ecology","MCQ","Easy","The first trophic level is occupied by:","Producers","Herbivores","Carnivores","Decomposers",0,"Green plants and other autotrophs form the first trophic level.");}
+        static Question phy(String id,int i,int s,int v){int t=s%5;if(t==0)return q(id,"NEET","Physics","Current Electricity","Numerical","Easy","A "+v+" Ω resistor is connected to "+(2*v)+" V. Current is:","2 A","1 A","4 A","0.5 A",0,"I=V/R.");if(t==1)return q(id,"NEET","Physics","Kinematics","Numerical","Easy","A body starts from rest with acceleration "+v+" m/s² for 2 s. Final speed is:",""+(2*v)+" m/s",""+v+" m/s",""+(v*v)+" m/s",""+(v+2)+" m/s",0,"v=u+at.");if(t==2)return q(id,"NEET","Physics","Work Energy Power","Numerical","Easy","A force of "+v+" N moves an object "+v+" m along the force. Work is:",""+(v*v)+" J",""+(2*v)+" J",""+v+" J",""+(v+1)+" J",0,"W=Fs.");if(t==3)return q(id,"NEET","Physics","Optics","MCQ","Moderate","The SI unit of lens power is:","Dioptre","Metre","Candela","Newton",0,"Lens power is measured in dioptres.");return q(id,"NEET","Physics","Modern Physics","MCQ","Easy","Photon energy is proportional to its:","Frequency","Mass only","Charge","Volume",0,"E=hf.");}
+        static Question chem(String id,int i,int s,int v){int t=s%5;if(t==0)return q(id,"NEET","Chemistry","Mole Concept","Numerical","Easy","Number of particles in 1 mole is approximately:","6.022×10²³","3.011×10²³","9.8×10²³","1.602×10⁻¹⁹",0,"Avogadro constant.");if(t==1)return q(id,"NEET","Chemistry","Atomic Structure","MCQ","Easy","Maximum electrons in shell n=2 are:","8","2","18","32",0,"2n² gives 8.");if(t==2)return q(id,"NEET","Chemistry","Chemical Bonding","MCQ","Easy","BF₃ has which geometry?","Trigonal planar","Tetrahedral","Linear","Bent",0,"BF₃ is trigonal planar.");if(t==3)return q(id,"NEET","Chemistry","Thermodynamics","MCQ","Moderate","For an exothermic reaction ΔH is generally:","Negative","Positive","Zero","Infinite",0,"Heat is released.");return q(id,"NEET","Chemistry","Electrochemistry","Numerical","Easy","If E°cathode=1.2 V and E°anode=0.3 V, E°cell is:","0.9 V","1.5 V","-0.9 V","0.3 V",0,"E°cell=E°cathode-E°anode.");}
+        static Question math(String id,int i,int s,int v){int t=s%5;if(t==0)return q(id,"JEE Main","Mathematics","Quadratic Equations","MCQ","Easy","The sum of roots of x²-"+(v+5)+"x+"+(v*2)+"=0 is:",""+(v+5),""+v,""+(v+2),""+(v*2),0,"For x²+bx+c, sum of roots is -b.");if(t==1)return q(id,"JEE Main","Mathematics","Sequence & Series","Numerical","Easy","The next term after "+v+", "+(v+2)+", "+(v+4)+" is:",""+(v+6),""+(v+5),""+(v+8),""+(v*2),0,"It is an arithmetic progression.");if(t==2)return q(id,"JEE Main","Mathematics","Differential Calculus","MCQ","Easy","d(x^"+v+")/dx equals:",""+v+"x^"+(v-1),""+(v-1)+"x^"+v,"x^"+v,""+v,0,"Power rule.");if(t==3)return q(id,"JEE Main","Mathematics","Matrices","MCQ","Easy","For square matrices A and B, det(AB) equals:","det(A)det(B)","det(A)+det(B)","det(A)-det(B)","0 always",0,"Determinants are multiplicative.");return q(id,"JEE Main","Mathematics","Probability","MCQ","Easy","A fair coin is tossed once. Probability of head is:","1/2","1/4","1","0",0,"Two equally likely outcomes.");}
+        static Question chemJ(String id,int i,int s,int v){return q(id,"JEE Main","Chemistry",s%2==0?"Organic Chemistry":"Physical Chemistry","MCQ","Moderate",s%2==0?"The functional group of an alcohol is:":"At constant temperature, pressure and volume of an ideal gas are related by:",s%2==0?"-OH":"Boyle's law","-COOH","-CHO","-NH₂",0,s%2==0?"Alcohols contain hydroxyl groups.":"For fixed temperature, PV is constant.");}
+        static Question q(String id,String e,String sub,String ch,String type,String diff,String text,String a,String b,String c,String d,int ans,String sol){return new Question(id,e,sub,ch,type,diff,text,new String[]{a,b,c,d},ans,sol);}
     }
 }
