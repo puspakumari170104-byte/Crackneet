@@ -19,6 +19,17 @@ async function ensureDatabase(){
  await pool.query("CREATE INDEX IF NOT EXISTS idx_questions_filters ON questions(exam,subject,type)");
  await pool.query("CREATE INDEX IF NOT EXISTS idx_attempts_user ON test_attempts(user_id,created_at DESC)");
  await pool.query("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token_hash)");
+ const count=await pool.query("SELECT COUNT(*)::int AS n FROM questions");
+ if(count.rows[0].n===0){
+  const bank=require("../../question_bank.json");
+  for(const q of bank.questions||[]){
+   const options=Array.isArray(q.options)?q.options:[];
+   const answerIndex=Number.isInteger(q.answer_index)?q.answer_index:(Number.isInteger(q.answer)?q.answer:null);
+   if(!q.exam||!q.subject||!q.type||!q.q||answerIndex===null) continue;
+   const id=q.id||crypto.createHash("sha256").update(JSON.stringify(q)).digest("hex").slice(0,24);
+   await pool.query("INSERT INTO questions(id,exam,subject,chapter,type,difficulty,question,options,answer_index,solution) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(id) DO NOTHING",[id,q.exam,q.subject,q.chapter||null,q.type,q.difficulty||null,q.q,JSON.stringify(options),answerIndex,q.solution||null]);
+  }
+ }
 }
 
 app.get("/api/health",async(req,res)=>{try{await pool.query("SELECT 1");res.json({ok:true,service:"crackneet-api",database:"connected"});}catch(e){res.status(503).json({ok:false,database:"unavailable"});}});
