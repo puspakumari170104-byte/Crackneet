@@ -63,13 +63,17 @@ public class MainActivity extends Activity {
             nav.addView(b,new LinearLayout.LayoutParams(0,dp(56),1));}frame.addView(nav);
     }
     void card(String title,String sub,String action,View.OnClickListener click){
-        LinearLayout c=box();c.setBackground(bg(Color.WHITE,16));c.setPadding(dp(14),dp(10),dp(14),dp(10));
+        LinearLayout c=box();c.setBackground(bg(Color.WHITE,16));c.setPadding(dp(16),dp(14),dp(16),dp(14));
         TextView t=tv(title,17,DARK,true);c.addView(t);c.addView(tv(sub,13,MUTED,false));
         if(action.length()>0){Button b=btn(action);b.setTextSize(12);b.setOnClickListener(click);c.addView(b,new LinearLayout.LayoutParams(-2,dp(42)));}
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(118));p.setMargins(0,dp(8),0,dp(8));content.addView(c,p);
     }
     void showDashboard(){
-        base("CrackNEET",false);content.addView(tv("Good Morning 👋",24,DARK,true));content.addView(tv("Keep going. Your hard work will pay off.",14,MUTED,false));
+        base("CrackNEET",false);
+        LinearLayout hero=box(); hero.setPadding(dp(18),dp(18),dp(18),dp(18)); hero.setBackground(bg(DARK,22));
+        TextView h1=tv("CrackNEET",28,Color.WHITE,true); hero.addView(h1); TextView h2=tv("Your complete NEET + JEE preparation hub",14,Color.rgb(205,230,225),false); hero.addView(h2);
+        TextView badge=tv("40,000+ QUESTIONS  •  PYQ  •  MOCKS",12,Color.WHITE,true); badge.setPadding(dp(10),dp(12),dp(10),dp(12)); badge.setBackground(bg(GREEN,12)); LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-2,dp(44));bp.setMargins(0,dp(12),0,0);hero.addView(badge,bp); content.addView(hero,new LinearLayout.LayoutParams(-1,dp(178)));
+        content.addView(tv("Good Morning 👋",24,DARK,true));content.addView(tv("Keep going. Your hard work will pay off.",14,MUTED,false));
         card("Today's Target","3 / 10 Chapters completed","Continue",v->showSubjects());
         card("NEET Mock Tests","Full syllabus • Chapter tests • PYQ","Start Test",v->showSubjects());
         card("JEE Main PYQ","Physics • Chemistry • Mathematics","Practice",v->{exam="JEE Main";showSubjects();});
