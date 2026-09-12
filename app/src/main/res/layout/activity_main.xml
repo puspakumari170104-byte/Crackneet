@@ -3,4 +3,6 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F8F7"/>
+    android:background="@drawable/app_background"
+    android:clipChildren="false"
+    android:clipToPadding="false" />
