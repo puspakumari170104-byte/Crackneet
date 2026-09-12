@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS questions(
 CREATE INDEX IF NOT EXISTS idx_questions_filters ON questions(exam,subject,type);
 CREATE TABLE IF NOT EXISTS test_attempts(
  id BIGSERIAL PRIMARY KEY,
- user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+ user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
  exam TEXT NOT NULL,
  score INT NOT NULL DEFAULT 0,
  total INT NOT NULL,
@@ -32,3 +32,12 @@ CREATE TABLE IF NOT EXISTS test_attempts(
  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_attempts_user ON test_attempts(user_id,created_at DESC);
+
+CREATE TABLE IF NOT EXISTS sessions(
+ id BIGSERIAL PRIMARY KEY,
+ user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+ token_hash TEXT UNIQUE NOT NULL,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ expires_at TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token_hash);
