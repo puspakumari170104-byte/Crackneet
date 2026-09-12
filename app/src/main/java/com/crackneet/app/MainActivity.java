@@ -121,21 +121,56 @@ public class MainActivity extends Activity {
         qIndex=0;score=0;answers.clear();marked.clear();showQuestion();
     }
     void showQuestion(){
-        base("Question "+(qIndex+1)+" / "+test.size(),true);if(test.size()==0){content.addView(tv("No questions available.",18,DARK,true));return;}
-        Question q=test.get(qIndex);content.addView(tv(q.subject+" • "+q.chapter+" • "+q.type,12,GREEN,true));content.addView(tv(q.text,19,TEXT,true));
-        final RadioGroup rg=new RadioGroup(this);for(String o:q.options){RadioButton r=new RadioButton(this);r.setText(o);r.setTextSize(15);r.setPadding(dp(4),dp(8),dp(4),dp(8));rg.addView(r);}content.addView(rg);
-        Button mark=btn(marked.contains(qIndex)?"★ Marked":"☆ Mark for Review");mark.setOnClickListener(v->{if(marked.contains(qIndex))marked.remove((Integer)qIndex);else marked.add(qIndex);showQuestion();});content.addView(mark);
-        Button next=btn(qIndex==test.size()-1?"Finish Test":"Next →");next.setOnClickListener(v->{int id=rg.getCheckedRadioButtonId();int chosen=-1;if(id!=-1)for(int i=0;i<rg.getChildCount();i++)if(rg.getChildAt(i).getId()==id)chosen=i;answers.add(chosen);if(chosen==q.answer)score++;qIndex++;if(qIndex>=test.size())showResult();else showQuestion();});content.addView(next);
-        Button pal=btn("Question Palette");pal.setOnClickListener(v->showPalette());content.addView(pal);
+        base("Test • "+(qIndex+1)+"/"+test.size(),true);
+        if(test.size()==0){content.addView(tv("No questions available.",18,DARK,true));return;}
+        Question q=test.get(qIndex);
+        LinearLayout head=box();head.setBackground(bg(Color.WHITE,18));head.addView(tv(q.subject+"  •  "+q.type,12,GREEN,true));head.addView(tv(q.chapter+"  •  "+q.difficulty,12,MUTED,false));
+        TextView qt=tv(q.text,19,TEXT,true);qt.setPadding(0,dp(10),0,dp(12));head.addView(qt);content.addView(head,new LinearLayout.LayoutParams(-1,dp(170)));
+        content.addView(tv("Choose the correct answer",15,DARK,true));
+        final RadioGroup rg=new RadioGroup(this);rg.setPadding(0,dp(4),0,dp(4));
+        for(int i=0;i<q.options.length;i++){RadioButton r=new RadioButton(this);r.setText((char)('A'+i)+"   "+q.options[i]);r.setTextSize(15);r.setTextColor(TEXT);r.setGravity(Gravity.CENTER_VERTICAL);r.setPadding(dp(12),0,dp(8),0);GradientDrawable obg=bg(Color.WHITE,14);r.setBackground(obg);RadioGroup.LayoutParams rp=new RadioGroup.LayoutParams(-1,dp(58));rp.setMargins(0,dp(5),0,dp(5));rg.addView(r,rp);}
+        content.addView(rg);
+        LinearLayout actions=new LinearLayout(this);actions.setGravity(Gravity.CENTER_VERTICAL);actions.setPadding(0,dp(8),0,dp(4));
+        Button mark=btn(marked.contains(qIndex)?"★  Marked":"☆  Mark for Review");mark.setTextColor(DARK);mark.setBackground(bg(Color.WHITE,14));actions.addView(mark,new LinearLayout.LayoutParams(0,dp(50),1));
+        LinearLayout.LayoutParams mp=(LinearLayout.LayoutParams)mark.getLayoutParams();mp.setMargins(0,0,dp(8),0);mark.setLayoutParams(mp);
+        Button next=btn(qIndex==test.size()-1?"Submit Test":"Next  →");actions.addView(next,new LinearLayout.LayoutParams(0,dp(50),1));content.addView(actions);
+        mark.setOnClickListener(v->{if(marked.contains(qIndex))marked.remove((Integer)qIndex);else marked.add(qIndex);showQuestion();});
+        next.setOnClickListener(v->{int id=rg.getCheckedRadioButtonId();int chosen=-1;if(id!=-1)chosen=rg.indexOfChild(rg.findViewById(id));while(answers.size()<=qIndex)answers.add(-1);answers.set(qIndex,chosen);if(chosen==q.answer)score=calculateScore();if(qIndex==test.size()-1){score=calculateScore();showResult();}else{qIndex++;showQuestion();}});
+        Button pal=btn("☷  Question Palette");pal.setTextColor(DARK);pal.setBackground(bg(Color.WHITE,14));LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-1,dp(50));pp.setMargins(0,dp(8),0,dp(10));content.addView(pal,pp);pal.setOnClickListener(v->showPalette());
     }
+    int calculateScore(){int x=0;for(int i=0;i<answers.size()&&i<test.size();i++)if(answers.get(i)==test.get(i).answer)x++;return x;}
     void showPalette(){
         StringBuilder s=new StringBuilder();for(int i=0;i<test.size();i++)s.append(i+1).append(answers.size()>i&&answers.get(i)>=0?" ✓":" ○").append(marked.contains(i)?" ★":"").append(i%5==4?"\n":"   ");
         new AlertDialog.Builder(this).setTitle("Question Palette").setMessage(s.toString()).setPositiveButton("Close",null).show();
     }
     void showResult(){
-        base("Test Result",true);int accuracy=test.size()==0?0:score*100/test.size();content.addView(tv(accuracy+"% Accuracy",30,GREEN,true));
-        card("Score",score+" / "+test.size(),"View Analysis",v->showProgress());card("Question Types","PYQ • PYQ Based • Mixed • Advanced","Review",v->showPalette());
-        Button again=btn("Retake Test");again.setOnClickListener(v->startTest());content.addView(again);
+        base("Test Result",true);score=calculateScore();int total=test.size(),wrong=0,unattempted=0;for(int i=0;i<total;i++){int a=answers.size()>i?answers.get(i):-1;if(a<0)unattempted++;else if(a!=test.get(i).answer)wrong++;}
+        int accuracy=total==0?0:score*100/total;
+        LinearLayout hero=box();hero.setGravity(Gravity.CENTER);hero.setBackground(bg(DARK,22));hero.addView(tv("TEST COMPLETED",12,Color.rgb(190,230,220),true));hero.addView(tv(accuracy+"%",42,Color.WHITE,true));hero.addView(tv("Accuracy",14,Color.WHITE,false));content.addView(hero,new LinearLayout.LayoutParams(-1,dp(150)));
+        LinearLayout stats=new LinearLayout(this);statBox(stats,"✓","Correct",String.valueOf(score),GREEN);statBox(stats,"×","Wrong",String.valueOf(wrong),Color.rgb(220,80,70));statBox(stats,"○","Skipped",String.valueOf(unattempted),MUTED);content.addView(stats);
+        content.addView(tv("Your Score",17,DARK,true));card("Total Score",score+" / "+total,"View Solutions",v->showSolutions());
+        content.addView(tv("Test Analysis",17,DARK,true));card("Performance","Accuracy "+accuracy+"%  •  Attempted "+(total-unattempted)+"/"+total,"Detailed Analysis",v->showAnalysis());
+        card("Question Review","Correct • Wrong • Unattempted • Marked","Open Palette",v->showPalette());
+        Button retake=btn("↻  Retake Test");retake.setOnClickListener(v->startTest());LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,dp(52));rp.setMargins(0,dp(10),0,dp(10));content.addView(retake,rp);
+    }
+    void statBox(LinearLayout row,String icon,String label,String value,int color){
+        LinearLayout c=box();c.setGravity(Gravity.CENTER);c.setBackground(bg(Color.WHITE,16));c.addView(tv(icon,20,color,true));c.addView(tv(value,20,DARK,true));c.addView(tv(label,11,MUTED,false));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(105),1);p.setMargins(dp(4),dp(6),dp(4),dp(6));row.addView(c,p);
+    }
+    void showSolutions(){
+        base("Solutions",true);content.addView(tv("Answer Key & Explanations",21,DARK,true));
+        for(int i=0;i<test.size();i++){Question q=test.get(i);int chosen=answers.size()>i?answers.get(i):-1;String status=chosen<0?"○ Unattempted":chosen==q.answer?"✓ Correct":"× Wrong";String selected=chosen<0?"Not attempted":q.options[chosen];String body="Your answer: "+selected+"\nCorrect answer: "+q.options[q.answer]+"\n\nSolution\n"+q.solution;card("Q"+(i+1)+"  •  "+status,q.text,"View Solution",v->solutionDialog("Q"+(i+1),body));}
+    }
+    void solutionDialog(String title,String body){new AlertDialog.Builder(this).setTitle(title).setMessage(body).setPositiveButton("Done",null).show();}
+    void showAnalysis(){
+        base("Test Analysis",true);score=calculateScore();content.addView(tv("Performance Breakdown",21,DARK,true));
+        int[] counts={0,0,0};for(int i=0;i<test.size();i++){Question q=test.get(i);int a=answers.size()>i?answers.get(i):-1;if(a==q.answer)counts[0]++;else if(a<0)counts[2]++;else counts[1]++;}
+        card("Overall Accuracy",score+" correct out of "+test.size(),score*100/Math.max(1,test.size())+"%",v->{});
+        card("Correct Answers","Strong areas • "+counts[0]+" questions","Review",v->showSolutions());
+        card("Wrong Answers","Topics needing revision • "+counts[1]+" questions","Review",v->showSolutions());
+        card("Unattempted","Questions skipped • "+counts[2],"Review",v->showSolutions());
+        content.addView(tv("Subject-wise Performance",17,DARK,true));
+        HashMap<String,int[]> m=new HashMap<String,int[]>();for(int i=0;i<test.size();i++){Question q=test.get(i);if(!m.containsKey(q.subject))m.put(q.subject,new int[]{0,0});int[] z=m.get(q.subject);z[1]++;if(answers.size()>i&&answers.get(i)==q.answer)z[0]++;}
+        for(String sub:m.keySet()){int[] z=m.get(sub);card(sub,z[0]+" / "+z[1]+" correct",z[0]*100/Math.max(1,z[1])+"% Accuracy",v->{});}
     }
     void showNotes(){base("Short Notes",false);card("Biology","NCERT high-yield revision","Open",v->note("Biology Notes"));card("Chemistry","Reactions • Concepts • Formulae","Open",v->note("Chemistry Notes"));card("Physics","Formula sheet • Concepts","Open",v->note("Physics Notes"));}
     void note(String t){new AlertDialog.Builder(this).setTitle(t).setMessage("High-yield concepts, important facts, formulas and exam tips.").setPositiveButton("Done",null).show();}
