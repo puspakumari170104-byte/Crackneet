@@ -290,6 +290,7 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         card("Revision History","Recently practiced chapters and questions","View",v->showNotes());
         content.addView(tv("Account",18,DARK,true));
         card("Settings","Notifications • Theme • Account","Open",v->showSettings());
+        card("Delete Account","Permanently delete your CrackNEET account and progress","Delete",v->confirmDeleteAccount());
         card("Premium","Unlock complete test series and advanced analytics","₹99 / month",v->showPremium());
         card("Help & Support","FAQs • Contact support","Open",v->new AlertDialog.Builder(this).setTitle("Help & Support").setMessage("For support, please contact CrackNEET support.").setPositiveButton("OK",null).show());
     }
@@ -301,8 +302,24 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         card("🌙 Appearance","Light, dark and system interface options","Choose",v->new AlertDialog.Builder(this).setTitle("Appearance").setItems(new String[]{"Light","Dark","System Default"},null).show());
         card("👤 Account","Profile and learning preferences","Open Profile",v->showProfile());
         card("🔒 Privacy","Practice data and app preferences","View",v->new AlertDialog.Builder(this).setTitle("Privacy").setMessage("Practice progress is stored locally in this prototype.").setPositiveButton("OK",null).show());
-        card("↪ Logout","Return to the welcome screen","Logout",v->showWelcome());
+        card("↪ Logout","Return to the welcome screen","Logout",v->{clearSession();showWelcome();});
     }
+    void confirmDeleteAccount(){
+        new AlertDialog.Builder(this).setTitle("Delete account?").setMessage("This permanently deletes your account, test attempts and progress. This cannot be undone.")
+        .setNegativeButton("Cancel",null).setPositiveButton("Delete",(d,w)->deleteAccount()).show();
+    }
+    void deleteAccount(){
+        if(authToken.length()==0){clearSession();showWelcome();return;}
+        new Thread(() -> {
+            try{
+                HttpURLConnection con=(HttpURLConnection)new URL(API_BASE+"/api/auth/account").openConnection();
+                con.setRequestMethod("DELETE");con.setRequestProperty("Authorization","Bearer "+authToken);con.setConnectTimeout(8000);con.setReadTimeout(10000);
+                int code=con.getResponseCode(); if(code!=200) throw new Exception("Account deletion failed");
+                clearSession();runOnUiThread(()->{Toast.makeText(this,"Account deleted.",Toast.LENGTH_LONG).show();showWelcome();});
+            }catch(Exception e){runOnUiThread(()->Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show());}
+        }).start();
+    }
+
     void showQuestionBank(){
         base("Question Bank",true);
         content.addView(tv("40,000+ Practice Questions",24,DARK,true));
