@@ -390,18 +390,21 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
     }
     void showNotePage(String cls,String subject,String chapter){
         base("Notes • "+chapter,true);
-        content.addView(tv("📌 NCERT High-Yield Notes",20,DARK,true));
-        content.addView(tv("Class: "+cls+"   |   Subject: "+subject,13,MUTED,false));
-        content.addView(tv("CORE CONCEPT",15,GREEN,true));
-        content.addView(tv("This chapter's notes are organized for rapid NEET revision from the NCERT concept sequence.",14,TEXT,false));
-        content.addView(tv("🔄 FLOW CHART",15,GREEN,true));
-        content.addView(tv("NCERT Concept → Key Definition → Mechanism/Relation → Important Exception → NEET Question",14,TEXT,true));
-        content.addView(tv("🧩 DIAGRAM / VISUAL REVISION",15,GREEN,true));
-        content.addView(tv("Diagram space • chapter-specific original educational visual will be placed here.",14,MUTED,false));
-        content.addView(tv("⭐ MUST REMEMBER",15,GREEN,true));
-        content.addView(tv("• NCERT terminology\n• High-yield facts\n• Formula / reaction / process where applicable\n• Common NEET confusion points",14,TEXT,false));
+        content.addView(tv("📚 NCERT CHAPTER REVISION",21,DARK,true));
+        content.addView(tv("Class: "+cls+"  •  "+subject+"  •  NEET Focused",13,MUTED,false));
+        addInfoCard("📌 KEY CONCEPTS",noteText(subject,chapter));
+        addInfoCard("🔄 FLOW CHART",noteFlow(subject,chapter));
+        addInfoCard("🧩 SIMPLE DIAGRAM",noteDiagram(subject,chapter));
+        addInfoCard("⭐ NCERT + NEET QUICK FACTS","Definition → Process → Important example → Exception → NEET trap");
+        addInfoCard("🧠 QUICK REVISION","Read the concept → follow the flowchart → study the diagram → attempt the chapter test.");
     }
-
+    void addInfoCard(String title,String body){
+        TextView t=tv(title+"\n\n"+body,14,TEXT,false);
+        int[] cols={Color.rgb(232,245,255),Color.rgb(236,252,242),Color.rgb(255,244,229),Color.rgb(247,238,255)};
+        GradientDrawable g=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{cols[(colorfulIndex++)%cols.length],Color.WHITE});
+        g.setCornerRadius(30f); t.setBackground(g); t.setPadding(24,22,24,22);
+        content.addView(t);
+    }
     String noteText(String s,String ch){
         if(s.equals("Biology")&&ch.equals("Cell: The Unit of Life")) return "Cell is the basic structural and functional unit of life. Prokaryotes lack a membrane-bound nucleus; eukaryotes possess a true nucleus and membrane-bound organelles. Plasma membrane is selectively permeable.";
         if(s.equals("Biology")&&ch.equals("Biomolecules")) return "Carbohydrates, proteins, lipids and nucleic acids are major biomolecules. Proteins are polymers of amino acids; nucleic acids are polymers of nucleotides. Enzymes act as biological catalysts.";
@@ -422,7 +425,7 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         if(s.equals("Physics")&&ch.equals("Work, Energy and Power")) return "Work is energy transferred by force through displacement. Kinetic energy is 1/2 mv²; power is rate of doing work.";
         if(s.equals("Physics")&&ch.equals("Current Electricity")) return "Current is charge flow. Ohm's law gives V = IR for ohmic conductors; series and parallel combinations follow circuit rules.";
         if(s.equals("Physics")&&ch.equals("Ray Optics and Optical Instruments")) return "Reflection and refraction are treated using rays. Mirror/lens equations connect object, image and focal distances; apply sign convention consistently.";
-        return "NEET quick revision: NCERT definitions → laws/principles → important relations → examples → exceptions → diagrams/tables → one-step applications.";
+        return "Chapter-wise NCERT revision: key definitions, core concepts, important processes/relations, examples, exceptions, diagrams/tables and NEET high-yield points.";
     }
     String noteFlow(String s,String ch){
         if(s.equals("Biology")&&ch.equals("Molecular Basis of Inheritance")) return "DNA → Replication → Transcription → RNA → Translation → Protein → Trait";
