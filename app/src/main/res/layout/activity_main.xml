@@ -1,14 +1,231 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent">
-<LinearLayout android:orientation="vertical" android:padding="20dp" android:layout_width="match_parent" android:layout_height="wrap_content">
-<TextView android:id="@+id/title" android:text="CrackNEET" android:textSize="30sp" android:textStyle="bold" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<TextView android:id="@+id/meta" android:textSize="14sp" android:layout_marginTop="6dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<TextView android:id="@+id/timer" android:text="Time left: 00:30:00" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>\n<TextView android:id="@+id/progress" android:textSize="14sp" android:layout_marginTop="14dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<TextView android:id="@+id/question" android:textSize="20sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<RadioGroup android:id="@+id/options" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp"/>
-<TextView android:id="@+id/result" android:textSize="17sp" android:textStyle="bold" android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<TextView android:id="@+id/explanation" android:textSize="15sp" android:layout_marginTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<TextView android:id="@+id/filterInfo" android:text="All subjects • All types" android:layout_marginTop="14dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<Button android:id="@+id/action" android:text="NEET Practice" android:layout_marginTop="20dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-<Button android:id="@+id/secondary" android:text="JEE Main Practice" android:layout_marginTop="10dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-</LinearLayout></ScrollView>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#F5F8FC">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="18dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/title"
+                    android:text="CrackNEET"
+                    android:textColor="#102A43"
+                    android:textSize="30sp"
+                    android:textStyle="bold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/meta"
+                    android:text="NEET preparation • Practice smarter"
+                    android:textColor="#60758A"
+                    android:textSize="14sp"
+                    android:layout_marginTop="3dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <TextView
+                android:text="NEET"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="#0B6EDE"
+                android:paddingLeft="14dp"
+                android:paddingRight="14dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:background="@drawable/card_bg"
+            android:layout_marginTop="18dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="TODAY'S TARGET"
+                android:textColor="#0B6EDE"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:text="Ready to crack your next test?"
+                android:textColor="#102A43"
+                android:textSize="21sp"
+                android:textStyle="bold"
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:text="Practice questions, track accuracy and improve weak topics."
+                android:textColor="#60758A"
+                android:textSize="14sp"
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="📚\nQuestion Bank"
+                android:gravity="center"
+                android:textColor="#17324D"
+                android:textSize="13sp"
+                android:background="@drawable/card_bg"
+                android:layout_weight="1"
+                android:layout_marginRight="5dp"
+                android:padding="12dp"
+                android:layout_width="0dp"
+                android:layout_height="76dp"/>
+            <TextView
+                android:text="🎯\nAccuracy"
+                android:gravity="center"
+                android:textColor="#17324D"
+                android:textSize="13sp"
+                android:background="@drawable/card_bg"
+                android:layout_weight="1"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:padding="12dp"
+                android:layout_width="0dp"
+                android:layout_height="76dp"/>
+            <TextView
+                android:text="🔥\nStreak"
+                android:gravity="center"
+                android:textColor="#17324D"
+                android:textSize="13sp"
+                android:background="@drawable/card_bg"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dp"
+                android:padding="12dp"
+                android:layout_width="0dp"
+                android:layout_height="76dp"/>
+        </LinearLayout>
+
+        <TextView
+            android:text="Start Practice"
+            android:textColor="#102A43"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/action"
+            android:text="NEET Practice"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/primary_button"
+            android:minHeight="54dp"
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/secondary"
+            android:text="JEE Main Practice"
+            android:textColor="#0B6EDE"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="#E8F1FF"
+            android:minHeight="54dp"
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:background="@drawable/card_bg"
+            android:layout_marginTop="16dp"
+            android:padding="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="TEST / QUESTION"
+                android:textColor="#60758A"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/progress"
+                android:text="Choose a practice test"
+                android:textColor="#102A43"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/timer"
+                android:text="Time left: 00:30:00"
+                android:textColor="#D9485F"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:layout_marginTop="6dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/question"
+                android:text="Choose an exam to start practice"
+                android:textColor="#102A43"
+                android:textSize="19sp"
+                android:textStyle="bold"
+                android:layout_marginTop="14dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <RadioGroup
+                android:id="@+id/options"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"/>
+            <TextView
+                android:id="@+id/result"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#0A7A45"
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/explanation"
+                android:textSize="14sp"
+                android:textColor="#52677B"
+                android:layout_marginTop="7dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/filterInfo"
+                android:text="All subjects • All types"
+                android:textColor="#60758A"
+                android:textSize="12sp"
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
