@@ -1,0 +1,59 @@
+name: Persist registration details in profile
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update backend and profile UI
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('backend/src/server.js')
+          s=p.read_text()
+          s=s.replace('SELECT u.id,u.name,u.email,s.token_hash FROM sessions s JOIN users u', 'SELECT u.id,u.name,u.email,u.created_at,s.token_hash FROM sessions s JOIN users u', 1)
+          s=s.replace('RETURNING id,name,email",[cleanName,normalized,hash]', 'RETURNING id,name,email,created_at",[cleanName,normalized,hash]', 1)
+          s=s.replace('SELECT id,name,email,password_hash FROM users WHERE email=$1', 'SELECT id,name,email,password_hash,created_at FROM users WHERE email=$1', 1)
+          s=s.replace('res.json({user:{id:rows[0].id,name:rows[0].name,email:rows[0].email},token});', 'res.json({user:{id:rows[0].id,name:rows[0].name,email:rows[0].email,created_at:rows[0].created_at},token});', 1)
+          s=s.replace('app.get("/api/users/me",auth,(req,res)=>res.json({user:{id:req.user.id,name:req.user.name,email:req.user.email}}));', 'app.get("/api/users/me",auth,(req,res)=>res.json({user:{id:req.user.id,name:req.user.name,email:req.user.email,created_at:req.user.created_at}}));', 1)
+          p.write_text(s)
+
+          p=Path('app/src/main/java/com/crackneet/app/MainActivity.java')
+          s=p.read_text()
+          s=s.replace('String pendingProfileName="",pendingProfileEmail="";', 'String pendingProfileName="",pendingProfileEmail="",pendingProfileCreatedAt="";', 1)
+          s=s.replace('void saveSession(long id,String token){ userId=id; authToken=token; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putLong("userId",id).putString("token",token).putString("name",profileNameSafe(id)).putString("email",profileEmailSafe(id)).apply(); }', 'void saveSession(long id,String token){ userId=id; authToken=token; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putLong("userId",id).putString("token",token).putString("name",profileNameSafe(id)).putString("email",profileEmailSafe(id)).putString("createdAt",pendingProfileCreatedAt).apply(); }', 1)
+          s=s.replace('pendingProfileName=u.optString("name","Student"); pendingProfileEmail=u.optString("email",""); saveSession(u.getLong("id"),out.getString("token"));', 'pendingProfileName=u.optString("name","Student"); pendingProfileEmail=u.optString("email",""); pendingProfileCreatedAt=u.optString("created_at",""); saveSession(u.getLong("id"),out.getString("token"));', 1)
+          s=s.replace('pendingProfileName=u.optString("name","Student"); pendingProfileEmail=u.optString("email","");saveSession(u.getLong("id"),out.getString("token"));', 'pendingProfileName=u.optString("name","Student"); pendingProfileEmail=u.optString("email",""); pendingProfileCreatedAt=u.optString("created_at",""); saveSession(u.getLong("id"),out.getString("token"));', 1)
+
+          old='''        String profileName="Student", profileEmail="";\n        android.content.SharedPreferences sp=getSharedPreferences("crackneet_session",MODE_PRIVATE);\n        profileName=sp.getString("name","Student"); profileEmail=sp.getString("email","");'''
+          new='''        String profileName="Student", profileEmail="", createdAt="";\n        android.content.SharedPreferences sp=getSharedPreferences("crackneet_session",MODE_PRIVATE);\n        profileName=sp.getString("name","Student"); profileEmail=sp.getString("email",""); createdAt=sp.getString("createdAt","");'''
+          if old not in s: raise SystemExit('profile prefs block not found')
+          s=s.replace(old,new,1)
+
+          old='''        info.addView(tv(profileName,20,Color.WHITE,true));info.addView(tv(profileEmail.length()>0?profileEmail:"NEET Aspirant",12,Color.rgb(200,225,220),false));info.addView(tv("Your CrackNEET account",11,GREEN,true));row.addView(info);head.addView(row);content.addView(head,new LinearLayout.LayoutParams(-1,dp(120)));'''
+          new='''        info.addView(tv(profileName,20,Color.WHITE,true));info.addView(tv(profileEmail.length()>0?profileEmail:"NEET Aspirant",12,Color.rgb(200,225,220),false));info.addView(tv("Account ID: "+(userId>0?String.valueOf(userId):"—"),11,Color.rgb(200,225,220),false));info.addView(tv(createdAt.length()>0?"Member since: "+createdAt.replace("T"," ").replace("Z",""):"Your CrackNEET account",11,GREEN,true));row.addView(info);head.addView(row);content.addView(head,new LinearLayout.LayoutParams(-1,dp(140)));'''
+          if old not in s: raise SystemExit('profile header block not found')
+          s=s.replace(old,new,1)
+
+          old='''        LinearLayout stats=new LinearLayout(this);statBox(stats,"🔥","Day Streak","7",GREEN);statBox(stats,"📝","Tests Taken","18",GREEN);statBox(stats,"🎯","Avg Accuracy","65%",GREEN);content.addView(stats);'''
+          new='''        LinearLayout stats=new LinearLayout(this);statBox(stats,"🔥","Day Streak","7",GREEN);statBox(stats,"📝","Tests Taken","18",GREEN);statBox(stats,"🎯","Avg Accuracy","65%",GREEN);content.addView(stats);\n        content.addView(tv("Registration details",18,DARK,true));\n        card("Full Name",profileName,"",v->{});\n        card("Email",profileEmail.length()>0?profileEmail:"Not available","",v->{});\n        card("Account ID",userId>0?String.valueOf(userId):"Not available","",v->{});'''
+          if old not in s: raise SystemExit('profile stats block not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/java/com/crackneet/app/MainActivity.java backend/src/server.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Show saved registration details in profile"
+          git push
