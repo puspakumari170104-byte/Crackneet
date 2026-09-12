@@ -283,6 +283,7 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
                 op1="Learn concept → Solve mixed questions";op2="Skip theory → Guess answers";op3="Memorise options only";op4="Avoid revision";sol="Concept learning followed by mixed practice is the appropriate preparation strategy.";
             }
             String id=(neet?"NEET":"JEE")+"-"+String.format(Locale.US,"%05d",n);
-            String[] opts=new String[]{op1,op2,op3,op4}; int ans=i%4; String tmp=opts[0]; opts[0]=opts[ans]; opts[ans]=tmp;\n            return new Question(id,exam,subject,chapter,type,i%3==0?"Easy":i%3==1?"Moderate":"Hard",q,opts,ans,sol);
+            String[] opts=new String[]{op1,op2,op3,op4}; int ans=i%4; String tmp=opts[0]; opts[0]=opts[ans]; opts[ans]=tmp;
+            return new Question(id,exam,subject,chapter,type,i%3==0?"Easy":i%3==1?"Moderate":"Hard",q,opts,ans,sol);
         }
     }}
