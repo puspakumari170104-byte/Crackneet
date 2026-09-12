@@ -1,0 +1,41 @@
+name: Wire chapter-wise NCERT short notes
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  wire-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Wire NcertNotes into MainActivity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('app/src/main/java/com/crackneet/app/MainActivity.java')
+          s=p.read_text()
+          start=s.find('    String noteText(String s,String ch){')
+          end=s.find('    String noteFlow(String s,String ch){', start)
+          if start < 0 or end < 0:
+              raise SystemExit('noteText method markers not found')
+          new_method='    String noteText(String s,String ch){\\n        return NcertNotes.get(s,ch);\\n    }\\n'
+          s=s[:start]+new_method+s[end:]
+          p.write_text(s)
+          PY
+          if git diff --quiet -- app/src/main/java/com/crackneet/app/MainActivity.java; then
+            echo 'No source change needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/java/com/crackneet/app/MainActivity.java
+          git commit -m 'Populate chapter-wise NCERT short notes'
+          git push origin HEAD:main
