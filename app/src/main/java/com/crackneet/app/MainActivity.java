@@ -10,12 +10,14 @@ import java.util.*;
 import java.net.*;
 import java.io.*;
 import org.json.*;
+import com.android.billingclient.api.*;
 
 public class MainActivity extends Activity {
     static final String API_BASE="https://crackneet-api.onrender.com";
     static final int GREEN=Color.rgb(0,170,118), DARK=Color.rgb(15,38,48), TEXT=Color.rgb(35,52,62), MUTED=Color.rgb(102,119,126), BG=Color.rgb(245,248,247);
     FrameLayout root; LinearLayout content; String exam="NEET"; long userId=-1; String authToken=""; int qIndex=0,score=0; long duration=30; long remainingSeconds=0; CountDownTimer timer;
     ArrayList<Question> bank=new ArrayList<Question>(), test=new ArrayList<Question>(); ArrayList<Integer> answers=new ArrayList<Integer>(), marked=new ArrayList<Integer>();
+    BillingClient billingClient; ProductDetails premiumProduct;
 
     static class Question {
         String id,exam,subject,chapter,type,difficulty,text,solution; String[] options; int answer;
@@ -26,7 +28,7 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b); setContentView(R.layout.activity_main); root=findViewById(R.id.root);
-        loadSession(); showSplash(); bank=QuestionBank.generate40000();
+        loadSession(); initBilling(); showSplash(); bank=QuestionBank.generate40000();
     }
     void loadSession(){ android.content.SharedPreferences p=getSharedPreferences("crackneet_session",MODE_PRIVATE); userId=p.getLong("userId",-1); authToken=p.getString("token",""); }
     void saveSession(long id,String token){ userId=id; authToken=token; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putLong("userId",id).putString("token",token).apply(); }
@@ -118,7 +120,7 @@ public class MainActivity extends Activity {
         String[] names={"⌂\nHome","▣\nTests","▤\nNotes","⌁\nProgress","♙\nProfile"};
         for(final String n:names){TextView b=tv(n,11,n.startsWith("⌂")?GREEN:MUTED,n.startsWith("⌂"));b.setGravity(Gravity.CENTER);b.setPadding(0,dp(5),0,dp(5));b.setBackground(bg(Color.WHITE,12));
             b.setOnClickListener(v->{if(n.startsWith("⌂"))showDashboard();else if(n.startsWith("▣"))showSubjects();else if(n.startsWith("▤"))showNotes();else if(n.startsWith("⌁"))showProgress();else showProfile();});
-            nav.addView(b,new LinearLayout.LayoutParams(0,dp(62),1));}frame.addView(nav);
+            nav.addView(b,new LinearLayout.LayoutParams(0,dp(56),1));} LinearLayout.LayoutParams np=new LinearLayout.LayoutParams(-1,dp(56)); np.setMargins(0,0,0,dp(8)); frame.addView(nav,np);
     }
     void card(String title,String sub,String action,View.OnClickListener click){
         LinearLayout c=box();c.setBackground(bg(Color.WHITE,18));c.setPadding(dp(18),dp(14),dp(18),dp(14));lift(c,7);
@@ -157,7 +159,11 @@ void showSubjects(){
     }
     void showChapters(String subject){
         base(subject,true);content.addView(tv("Chapter-wise Practice",22,DARK,true));
-        String[] ch=subject.equals("Biology")?new String[]{"Cell: The Unit of Life","Human Physiology","Genetics","Ecology","Plant Physiology"}:subject.equals("Physics")?new String[]{"Kinematics","Laws of Motion","Work Energy Power","Current Electricity","Optics","Modern Physics"}:subject.equals("Chemistry")?new String[]{"Mole Concept","Atomic Structure","Chemical Bonding","Thermodynamics","Equilibrium","Electrochemistry","Organic Chemistry"}:new String[]{"Quadratic Equations","Matrices","Sequence & Series","Differential Calculus","Probability"};
+        String[] ch;
+        if(subject.equals("Biology")) ch=new String[]{"The Living World","Biological Classification","Plant Kingdom","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Structural Organisation in Animals","Cell: The Unit of Life","Biomolecules","Cell Cycle and Cell Division","Transport in Plants","Mineral Nutrition","Photosynthesis in Plants","Respiration in Plants","Plant Growth and Development","Digestion and Absorption","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration","Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Strategies for Enhancement in Food Production","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation","Environmental Issues"};
+        else if(subject.equals("Physics")) ch=new String[]{"Units and Measurements","Motion in a Straight Line","Motion in a Plane","Laws of Motion","Work, Energy and Power","System of Particles and Rotational Motion","Gravitation","Properties of Bulk Matter","Thermodynamics","Kinetic Theory","Oscillations","Waves","Electric Charges and Fields","Electrostatic Potential and Capacitance","Current Electricity","Moving Charges and Magnetism","Magnetism and Matter","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics and Optical Instruments","Wave Optics","Dual Nature of Radiation and Matter","Atoms","Nuclei","Semiconductor Electronics";
+        else if(subject.equals("Chemistry")) ch=new String[]{"Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","Thermodynamics","Equilibrium","Redox Reactions","Organic Chemistry: Basic Principles","Hydrocarbons","Solutions","Electrochemistry","Chemical Kinetics","p-Block Elements","d- and f-Block Elements","Coordination Compounds","Haloalkanes and Haloarenes","Alcohols, Phenols and Ethers","Aldehydes, Ketones and Carboxylic Acids","Amines","Biomolecules","Principles Related to Practical Chemistry"};
+        else ch=new String[]{"Sets and Functions","Complex Numbers","Quadratic Equations","Matrices","Determinants","Permutations and Combinations","Binomial Theorem","Sequences and Series","Limits","Continuity and Differentiability","Integral Calculus","Differential Equations","Coordinate Geometry","Three Dimensional Geometry","Vector Algebra","Statistics","Probability","Trigonometry","Mathematical Reasoning"};
         int i=1;for(final String c:ch){card(i+++". "+c,"PYQ • PYQ Based • Mixed • Assertion/Reason","Start Test",v->startInstructions());}
     }
     void startInstructions(){
@@ -351,12 +357,44 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         LinearLayout hero=box();hero.setBackgroundResource(R.drawable.hero_gradient);hero.setPadding(dp(20),dp(20),dp(20),dp(20));
         hero.addView(tv("✦  CRACKNEET PRO",13,Color.WHITE,true));hero.addView(tv("Serious preparation. Smarter practice.",22,Color.WHITE,true));hero.addView(tv("₹99 / month  •  Cancel anytime",12,Color.rgb(220,240,235),false));content.addView(hero);
         content.addView(tv("Everything you need",19,DARK,true));
+        card("💳 Pro Membership","₹99/month • Google Play payment • UPI where available","Buy Pro",v->buyPremium());
         card("🚀 Full Mock Tests","Complete NEET + JEE Main timed tests","Start Mock",v->startTest());
-        card("🧠 Advanced Question Bank","PYQ-based + Assertion-Reason + Statement + Match Column","Unlock Pro",v->premiumDialog("Advanced Question Bank"));
+        card("🧠 Advanced Question Bank","40,000+ practice questions across the syllabus","Unlock Pro",v->premiumDialog("Advanced Question Bank"));
         card("📊 Advanced Analytics","Weak chapters, accuracy and performance trends","Unlock Pro",v->premiumDialog("Advanced Analytics"));
         card("⭐ Smart Revision","Revision from attempted questions","Unlock Pro",v->premiumDialog("Smart Revision"));
     }
     void premiumDialog(String feature){new AlertDialog.Builder(this).setTitle("CrackNEET Pro").setMessage(feature+" is included in Pro.").setPositiveButton("Continue",null).setNegativeButton("Later",null).show();}
+    void initBilling(){
+        billingClient=BillingClient.newBuilder(this).setListener((result,purchases)->{
+            if(result.getResponseCode()==BillingClient.BillingResponseCode.OK && purchases!=null){
+                for(Purchase p:purchases) if(p.getPurchaseState()==Purchase.PurchaseState.PURCHASED){
+                    if(!p.isAcknowledged()) billingClient.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(p.getPurchaseToken()).build(),br->{});
+                    Toast.makeText(this,"CrackNEET Pro activated.",Toast.LENGTH_LONG).show();
+                }
+            }
+        }).enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()).build();
+        billingClient.startConnection(new BillingClientStateListener(){
+            public void onBillingSetupFinished(BillingResult r){if(r.getResponseCode()==BillingClient.BillingResponseCode.OK) queryPremium();}
+            public void onBillingServiceDisconnected(){}
+        });
+    }
+    void queryPremium(){
+        QueryProductDetailsParams.Product p=QueryProductDetailsParams.Product.newBuilder().setProductId("crackneet_pro_monthly").setProductType(BillingClient.ProductType.SUBS).build();
+        billingClient.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder().setProductList(Collections.singletonList(p)).build(),(r,res)->{
+            if(r.getResponseCode()==BillingClient.BillingResponseCode.OK && res.getProductDetailsList()!=null && !res.getProductDetailsList().isEmpty()) premiumProduct=res.getProductDetailsList().get(0);
+        });
+    }
+    void buyPremium(){
+        if(billingClient==null||!billingClient.isReady()){Toast.makeText(this,"Google Play payment is connecting. Please try again.",Toast.LENGTH_SHORT).show();return;}
+        if(premiumProduct==null){Toast.makeText(this,"Premium plan is not published in Google Play yet.",Toast.LENGTH_LONG).show();return;}
+        List<ProductDetails.SubscriptionOfferDetails> offers=premiumProduct.getSubscriptionOfferDetails();
+        if(offers==null||offers.isEmpty()){Toast.makeText(this,"Premium offer is unavailable.",Toast.LENGTH_LONG).show();return;}
+        String token=offers.get(0).getOfferToken();
+        BillingFlowParams.ProductDetailsParams pp=BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(premiumProduct).setOfferToken(token).build();
+        BillingFlowParams flow=BillingFlowParams.newBuilder().setProductDetailsParamsList(Collections.singletonList(pp)).build();
+        billingClient.launchBillingFlow(this,flow);
+    }
+
     void showDrawer(){final String[] items={"Home","Tests","Notes","Progress","Profile","Premium"};new AlertDialog.Builder(this).setTitle("CrackNEET").setItems(items,(d,w)->{if(w==0)showDashboard();else if(w==1)showSubjects();else if(w==2)showNotes();else if(w==3)showProgress();else if(w==4)showProfile();else showPremium();}).show();}
     @Override public void onBackPressed(){showDashboard();}
 
@@ -372,10 +410,10 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
             if(neet) subject=new String[]{"Biology","Physics","Chemistry"}[i%3];
             else subject=new String[]{"Physics","Chemistry","Mathematics"}[i%3];
             String chapter;
-            if(subject.equals("Biology")) chapter=new String[]{"Cell: The Unit of Life","Genetics","Human Physiology","Plant Physiology","Ecology"}[i%5];
-            else if(subject.equals("Physics")) chapter=new String[]{"Kinematics","Current Electricity","Electrostatics","Ray Optics","Modern Physics"}[i%5];
-            else if(subject.equals("Chemistry")) chapter=new String[]{"Chemical Bonding","Electrochemistry","Thermodynamics","Organic Chemistry","Coordination Compounds"}[i%5];
-            else chapter=new String[]{"Quadratic Equations","Matrices","Calculus","Coordinate Geometry","Probability"}[i%5];
+            if(subject.equals("Biology")) {String[] c={"The Living World","Biological Classification","Plant Kingdom","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Structural Organisation in Animals","Cell: The Unit of Life","Biomolecules","Cell Cycle and Cell Division","Transport in Plants","Mineral Nutrition","Photosynthesis in Plants","Respiration in Plants","Plant Growth and Development","Digestion and Absorption","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration","Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Strategies for Enhancement in Food Production","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation","Environmental Issues"};chapter=c[i%c.length];}
+            else if(subject.equals("Physics")) {String[] c={"Units and Measurements","Motion in a Straight Line","Motion in a Plane","Laws of Motion","Work, Energy and Power","System of Particles and Rotational Motion","Gravitation","Properties of Bulk Matter","Thermodynamics","Kinetic Theory","Oscillations","Waves","Electric Charges and Fields","Electrostatic Potential and Capacitance","Current Electricity","Moving Charges and Magnetism","Magnetism and Matter","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics and Optical Instruments","Wave Optics","Dual Nature of Radiation and Matter","Atoms","Nuclei","Semiconductor Electronics"};chapter=c[i%c.length];}
+            else if(subject.equals("Chemistry")) {String[] c={"Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","Thermodynamics","Equilibrium","Redox Reactions","Organic Chemistry: Basic Principles","Hydrocarbons","Solutions","Electrochemistry","Chemical Kinetics","p-Block Elements","d- and f-Block Elements","Coordination Compounds","Haloalkanes and Haloarenes","Alcohols, Phenols and Ethers","Aldehydes, Ketones and Carboxylic Acids","Amines","Biomolecules","Principles Related to Practical Chemistry"};chapter=c[i%c.length];}
+            else {String[] c={"Sets and Functions","Complex Numbers","Quadratic Equations","Matrices","Determinants","Permutations and Combinations","Binomial Theorem","Sequences and Series","Limits","Continuity and Differentiability","Integral Calculus","Differential Equations","Coordinate Geometry","Three Dimensional Geometry","Vector Algebra","Statistics","Probability","Trigonometry","Mathematical Reasoning"};chapter=c[i%c.length];}
             String[] types={"MCQ","PYQ Based","Assertion-Reason","Statement Based","Match the Column","Numerical"};
             String type=types[i%types.length]; int n=i+1, v=i%20+2;
             String q,op1,op2,op3,op4,sol;
