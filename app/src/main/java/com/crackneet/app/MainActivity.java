@@ -81,34 +81,25 @@ public class MainActivity extends Activity {
     }
     void showDashboard(){
         base("CrackNEET",false);
-        LinearLayout hero=box();hero.setPadding(dp(20),dp(18),dp(20),dp(18));hero.setBackgroundResource(R.drawable.hero_gradient);lift(hero,10);
-        TextView h1=tv("CrackNEET",27,Color.WHITE,true);hero.addView(h1);
-        TextView h2=tv("Your NEET + JEE preparation companion",13,Color.rgb(210,235,229),false);hero.addView(h2);
-        LinearLayout stats=new LinearLayout(this);stats.setPadding(0,dp(10),0,0);
-        TextView s1=tv("40K+\nQuestions",13,Color.WHITE,true);s1.setGravity(Gravity.CENTER);stats.addView(s1,new LinearLayout.LayoutParams(0,dp(55),1));
-        TextView s2=tv("PYQ +\nPractice",13,Color.WHITE,true);s2.setGravity(Gravity.CENTER);stats.addView(s2,new LinearLayout.LayoutParams(0,dp(55),1));
-        TextView s3=tv("Mock\nTests",13,Color.WHITE,true);s3.setGravity(Gravity.CENTER);stats.addView(s3,new LinearLayout.LayoutParams(0,dp(55),1));hero.addView(stats);
-        content.addView(hero,new LinearLayout.LayoutParams(-1,dp(165)));
-        content.addView(tv("Good Morning 👋",23,DARK,true));content.addView(tv("Keep going. Your hard work will pay off.",14,MUTED,false));
-        LinearLayout target=box();target.setBackground(bg(Color.WHITE,18));target.addView(tv("Today's Target",18,DARK,true));target.addView(tv("3 / 10 Chapters",13,MUTED,false));
-        TextView progress=tv("██████░░░░  30%",12,GREEN,true);target.addView(progress);content.addView(target,new LinearLayout.LayoutParams(-1,dp(105)));
-        content.addView(tv("Quick Access",18,DARK,true));
-        LinearLayout row1=new LinearLayout(this);row1.setGravity(Gravity.CENTER);
-        miniCard(row1,"📝","Take Test","Practice & Improve",v->showSubjects());miniCard(row1,"📚","Short Notes","Revise Smart",v->showNotes());content.addView(row1);
-        LinearLayout row2=new LinearLayout(this);row2.setGravity(Gravity.CENTER);
-        miniCard(row2,"📈","Performance","View Analytics",v->showProgress());miniCard(row2,"🔥","Weak Topics","Focus & Improve",v->showProgress());content.addView(row2);
-        content.addView(tv("Upcoming Tests",18,DARK,true));
-        card("Full Syllabus Mock Test","Physics • Chemistry • Biology • 180 Questions","Start",v->startInstructions());
-        card("NEET PYQ Practice","Previous Years • Chapter-wise","Practice",v->showSubjects());
-        card("JEE Main PYQ","Physics • Chemistry • Mathematics","Practice",v->{exam="JEE Main";showSubjects();});
+        TextView greet=tv("Good Morning 👋",25,DARK,true);content.addView(greet);content.addView(tv("Your preparation dashboard",13,MUTED,false));
+        LinearLayout hero=box();hero.setPadding(dp(20),dp(18),dp(20),dp(18));hero.setBackgroundResource(R.drawable.hero_gradient);lift(hero,12);
+        hero.addView(tv("CrackNEET",28,Color.WHITE,true));hero.addView(tv("NEET + JEE  •  Smart preparation",13,Color.rgb(215,240,233),false));
+        LinearLayout stats=new LinearLayout(this);stats.setPadding(0,dp(12),0,0);
+        statBoxDark(stats,"40K+","Questions");statBoxDark(stats,"180","Mock Tests");statBoxDark(stats,"24×7","Practice");hero.addView(stats);content.addView(hero,new LinearLayout.LayoutParams(-1,dp(170)));
+        content.addView(tv("Continue Learning",18,DARK,true));
+        card("Your Daily Target","3 / 10 chapters completed","Continue  →",v->showSubjects());
+        content.addView(tv("Quick Practice",18,DARK,true));
+        LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER);miniCard(row,"✦","NEET PYQ","Chapter-wise",v->{exam="NEET";showSubjects();});miniCard(row,"⚡","JEE Main","PYQ Practice",v->{exam="JEE Main";showSubjects();});content.addView(row);
+        LinearLayout row2=new LinearLayout(this);row2.setGravity(Gravity.CENTER);miniCard(row2,"🧠","Mixed Test","All patterns",v->startInstructions());miniCard(row2,"📊","Analytics","Your progress",v->showProgress());content.addView(row2);
+        content.addView(tv("Recommended For You",18,DARK,true));
+        card("Full Syllabus Mock","180 Questions  •  Timed Test","Start Test",v->startInstructions());
+        card("Assertion + Statement Challenge","Mixed advanced practice","Practice",v->showSubjects());
+        card("Match Column Mastery","Concept linking practice","Practice",v->showSubjects());
     }
-    void miniCard(LinearLayout row,String icon,String title,String sub,View.OnClickListener click){
-        LinearLayout c=box();c.setGravity(Gravity.CENTER_VERTICAL);c.setBackground(bg(Color.WHITE,16));c.setPadding(dp(12),dp(10),dp(10),dp(10));
-        TextView i=tv(icon,24,GREEN,true);c.addView(i,new LinearLayout.LayoutParams(-1,dp(32)));
-        c.addView(tv(title,14,DARK,true));c.addView(tv(sub,10,MUTED,false));c.setOnClickListener(click);
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(118),1);p.setMargins(dp(4),dp(4),dp(4),dp(4));row.addView(c,p);
+    void statBoxDark(LinearLayout row,String value,String label){
+        LinearLayout c=box();c.setGravity(Gravity.CENTER);c.setPadding(0,dp(5),0,0);c.addView(tv(value,17,Color.WHITE,true));c.addView(tv(label,10,Color.rgb(205,232,225),false));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(55),1);row.addView(c,p);
     }
-    void showSubjects(){
+void showSubjects(){
         base(exam+" Tests",true);content.addView(tv("Choose your subject",22,DARK,true));
         String[][] d=exam.equals("JEE Main")?new String[][]{{"Physics","PYQ + Practice"},{"Chemistry","PYQ + Practice"},{"Mathematics","PYQ + Practice"}}:new String[][]{{"Physics","12 Chapters"},{"Chemistry","14 Chapters"},{"Biology","16 Chapters"}};
         for(String[] x:d){final String s=x[0];card(s,x[1]+" • Tests • Notes","Open",v->showChapters(s));}
