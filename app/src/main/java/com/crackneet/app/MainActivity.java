@@ -150,16 +150,21 @@ void showSubjects(){
         new AlertDialog.Builder(this).setTitle("Question Palette").setMessage(s.toString()).setPositiveButton("Close",null).show();
     }
     void showResult(){
+        if(timer!=null){timer.cancel();timer=null;}
         base("Test Result",true);score=calculateScore();int total=test.size(),wrong=0,unattempted=0;for(int i=0;i<total;i++){int a=answers.size()>i?answers.get(i):-1;if(a<0)unattempted++;else if(a!=test.get(i).answer)wrong++;}
         int accuracy=total==0?0:score*100/total;
-        LinearLayout hero=box();hero.setGravity(Gravity.CENTER);hero.setBackground(bg(DARK,22));hero.addView(tv("TEST COMPLETED",12,Color.rgb(190,230,220),true));hero.addView(tv(accuracy+"%",42,Color.WHITE,true));hero.addView(tv("Accuracy",14,Color.WHITE,false));content.addView(hero,new LinearLayout.LayoutParams(-1,dp(150)));
+        LinearLayout hero=box();hero.setGravity(Gravity.CENTER);hero.setBackgroundResource(R.drawable.hero_gradient);lift(hero,12);
+        hero.addView(tv("🎉  TEST COMPLETED",12,Color.WHITE,true));hero.addView(tv(accuracy+"%",42,Color.WHITE,true));hero.addView(tv("Accuracy • "+(total-unattempted)+"/"+total+" attempted",14,Color.WHITE,false));content.addView(hero,new LinearLayout.LayoutParams(-1,dp(165)));
+        content.addView(tv("Performance Snapshot",18,DARK,true));
         LinearLayout stats=new LinearLayout(this);statBox(stats,"✓","Correct",String.valueOf(score),GREEN);statBox(stats,"×","Wrong",String.valueOf(wrong),Color.rgb(220,80,70));statBox(stats,"○","Skipped",String.valueOf(unattempted),MUTED);content.addView(stats);
-        content.addView(tv("Your Score",17,DARK,true));card("Total Score",score+" / "+total,"View Solutions",v->showSolutions());
-        content.addView(tv("Test Analysis",17,DARK,true));card("Performance","Accuracy "+accuracy+"%  •  Attempted "+(total-unattempted)+"/"+total,"Detailed Analysis",v->showAnalysis());
-        card("Question Review","Correct • Wrong • Unattempted • Marked","Open Palette",v->showPalette());
-        Button retake=btn("↻  Retake Test");retake.setOnClickListener(v->startTest());LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,dp(52));rp.setMargins(0,dp(10),0,dp(10));content.addView(retake,rp);
+        LinearLayout stats2=new LinearLayout(this);statBox(stats2,"🎯","Score",score+" / "+total,GREEN);statBox(stats2,"⏱","Time",String.format(Locale.US,"%02d:%02d",remainingSeconds/60,remainingSeconds%60),DARK);statBox(stats2,"⭐","Accuracy",accuracy+"%",GREEN);content.addView(stats2);
+        content.addView(tv("What would you like to review?",17,DARK,true));
+        card("📖 Solutions","Every question with your answer, correct answer and explanation","Open Solutions",v->showSolutions());
+        card("📊 Test Analysis","Subject-wise performance, accuracy and weak areas","Detailed Analysis",v->showAnalysis());
+        card("🔢 Question Review","Jump to correct, wrong, skipped and marked questions","Open Palette",v->showPalette());
+        Button retake=btn("↻  Retake Test");retake.setOnClickListener(v->startTest());LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,dp(54));rp.setMargins(0,dp(10),0,dp(10));content.addView(retake,rp);
     }
-    void statBox(LinearLayout row,String icon,String label,String value,int color){
+void statBox(LinearLayout row,String icon,String label,String value,int color){
         LinearLayout c=box();c.setGravity(Gravity.CENTER);c.setBackground(bg(Color.WHITE,16));c.addView(tv(icon,20,color,true));c.addView(tv(value,20,DARK,true));c.addView(tv(label,11,MUTED,false));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(105),1);p.setMargins(dp(4),dp(6),dp(4),dp(6));row.addView(c,p);
     }
     void showSolutions(){
