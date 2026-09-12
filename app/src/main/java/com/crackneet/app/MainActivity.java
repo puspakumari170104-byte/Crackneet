@@ -344,9 +344,21 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         card("🔔 Notifications","Daily practice reminders and test alerts","Manage",v->new AlertDialog.Builder(this).setTitle("Notifications").setMessage("Daily reminders are enabled for this build.").setPositiveButton("OK",null).show());
         card("🌙 Appearance","Light, dark and system interface options","Choose",v->new AlertDialog.Builder(this).setTitle("Appearance").setItems(new String[]{"Light","Dark","System Default"},null).show());
         card("👤 Account","Profile and learning preferences","Open Profile",v->showProfile());
-        card("🔒 Privacy","Practice data and app preferences","View",v->new AlertDialog.Builder(this).setTitle("Privacy").setMessage("Practice progress is stored locally in this prototype.").setPositiveButton("OK",null).show());
-        card("↪ Logout","Return to the welcome screen","Logout",v->{clearSession();showWelcome();});
+        card("🔒 Privacy","Practice data and app preferences","View",v->new AlertDialog.Builder(this).setTitle("Privacy").setMessage("Your account, test attempts and progress are stored securely by the CrackNEET backend. Authentication uses a session token.").setPositiveButton("OK",null).show());
+        card("↪ Logout","Securely end this session","Logout",v->logout());
     }
+    void logout(){
+        final String token=authToken;
+        new Thread(() -> {
+            try{
+                if(token.length()>0){
+                    HttpURLConnection con=(HttpURLConnection)new URL(API_BASE+"/api/auth/logout").openConnection();
+                    con.setRequestMethod("POST");con.setRequestProperty("Authorization","Bearer "+token);con.setConnectTimeout(5000);con.setReadTimeout(5000);con.getResponseCode();con.disconnect();
+                }
+            }catch(Exception ignored){} finally{runOnUiThread(()->{clearSession();showWelcome();});}
+        }).start();
+    }
+
     void confirmDeleteAccount(){
         new AlertDialog.Builder(this).setTitle("Delete account?").setMessage("This permanently deletes your account, test attempts and progress. This cannot be undone.")
         .setNegativeButton("Cancel",null).setPositiveButton("Delete",(d,w)->deleteAccount()).show();
