@@ -4,7 +4,11 @@ android {
     namespace = "com.crackneet.app"
     compileSdk = 36
 
-    buildFeatures {\n        buildConfig = true\n    }\n\n    defaultConfig {
+    buildFeatures {
+        buildConfig = true
+    }
+
+    defaultConfig {
         applicationId = "com.crackneet.app"
         minSdk = 23
         targetSdk = 36
