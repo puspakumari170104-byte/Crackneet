@@ -32,9 +32,9 @@ public class MainActivity extends Activity {
     }
     String profileNameSafe(long id){ return pendingProfileName==null||pendingProfileName.length()==0?"Student":pendingProfileName; }
     String profileEmailSafe(long id){ return pendingProfileEmail==null?"":pendingProfileEmail; }
-    String pendingProfileName="",pendingProfileEmail="";
+    String pendingProfileName="",pendingProfileEmail="",pendingProfileCreatedAt="";
     void loadSession(){ android.content.SharedPreferences p=getSharedPreferences("crackneet_session",MODE_PRIVATE); userId=p.getLong("userId",-1); authToken=p.getString("token",""); }
-    void saveSession(long id,String token){ userId=id; authToken=token; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putLong("userId",id).putString("token",token).putString("name",profileNameSafe(id)).putString("email",profileEmailSafe(id)).apply(); }
+    void saveSession(long id,String token){ userId=id; authToken=token; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putLong("userId",id).putString("token",token).putString("name",profileNameSafe(id)).putString("email",profileEmailSafe(id)).putString("createdAt",pendingProfileCreatedAt).apply(); }
     void clearSession(){ userId=-1; authToken=""; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().clear().apply(); }
     int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
     TextView tv(String s,float z,int c,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(z);t.setTextColor(c);t.setTypeface(null,bold?1:0);t.setPadding(0,dp(5),0,dp(5));return t;}
@@ -108,7 +108,7 @@ public class MainActivity extends Activity {
                 BufferedReader br=new BufferedReader(new InputStreamReader(is));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();
                 JSONObject out=new JSONObject(sb.toString());
                 if(code!=200)throw new Exception(out.optString("error","Login failed"));
-                JSONObject u=out.getJSONObject("user"); pendingProfileName=u.optString("name","Student"); pendingProfileEmail=u.optString("email",""); saveSession(u.getLong("id"),out.getString("token"));
+                JSONObject u=out.getJSONObject("user"); pendingProfileName=u.optString("name","Student"); pendingProfileEmail=u.optString("email",""); pendingProfileCreatedAt=u.optString("created_at",""); saveSession(u.getLong("id"),out.getString("token"));
                 runOnUiThread(()->showDashboard());
             }catch(Exception e){runOnUiThread(()->Toast.makeText(this,e.getMessage()==null?"Login failed":e.getMessage(),Toast.LENGTH_LONG).show());}
         }).start();
@@ -139,7 +139,7 @@ public class MainActivity extends Activity {
                 BufferedReader br=new BufferedReader(new InputStreamReader(raw,"UTF-8"));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();
                 JSONObject out; try{out=new JSONObject(sb.toString());}catch(Exception parse){throw new Exception("Server returned HTTP "+code);}
                 if(code!=201)throw new Exception(out.optString("error","Registration failed (HTTP "+code+")"));
-                JSONObject u=out.getJSONObject("user");pendingProfileName=u.optString("name","Student"); pendingProfileEmail=u.optString("email","");saveSession(u.getLong("id"),out.getString("token"));runOnUiThread(()->showDashboard());
+                JSONObject u=out.getJSONObject("user");pendingProfileName=u.optString("name","Student"); pendingProfileEmail=u.optString("email",""); pendingProfileCreatedAt=u.optString("created_at","");saveSession(u.getLong("id"),out.getString("token"));runOnUiThread(()->showDashboard());
             }catch(Exception e){runOnUiThread(()->Toast.makeText(this,e.getMessage()==null?"Registration failed":e.getMessage(),Toast.LENGTH_LONG).show());}
         }).start();
     }
@@ -329,9 +329,15 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
         String profileName="Student", profileEmail="";
         android.content.SharedPreferences sp=getSharedPreferences("crackneet_session",MODE_PRIVATE);
         profileName=sp.getString("name","Student"); profileEmail=sp.getString("email","");
+        String profileCreatedAt=sp.getString("createdAt","");
         String initials=profileName.trim().length()>0?profileName.trim().substring(0,Math.min(2,profileName.trim().length())).toUpperCase():"ST";
         TextView av=tv(initials,22,Color.WHITE,true);av.setGravity(Gravity.CENTER);av.setBackground(bg(GREEN,50));row.addView(av,new LinearLayout.LayoutParams(dp(62),dp(62)));
         LinearLayout info=box();info.setPadding(dp(14),0,0,0);info.addView(tv(profileName,20,Color.WHITE,true));info.addView(tv(profileEmail.length()>0?profileEmail:"NEET Aspirant",12,Color.rgb(200,225,220),false));info.addView(tv("Your CrackNEET account",11,GREEN,true));row.addView(info);head.addView(row);content.addView(head,new LinearLayout.LayoutParams(-1,dp(120)));
+        LinearLayout accountInfo=box(); accountInfo.setBackground(bg(Color.WHITE,18));
+        accountInfo.addView(tv("Account ID:  "+userId,14,TEXT,true));
+        String memberSince=profileCreatedAt.length()>0?profileCreatedAt.replace("T"," ").replace("Z",""):"Not available";
+        accountInfo.addView(tv("Member Since:  "+memberSince,13,MUTED,false));
+        content.addView(accountInfo,new LinearLayout.LayoutParams(-1,dp(92)));
         LinearLayout stats=new LinearLayout(this);statBox(stats,"🔥","Day Streak","7",GREEN);statBox(stats,"📝","Tests Taken","18",GREEN);statBox(stats,"🎯","Avg Accuracy","65%",GREEN);content.addView(stats);
         content.addView(tv("My Learning",18,DARK,true));
         card("My Performance","Accuracy, subject scores and weak topics","Open",v->showProgress());
