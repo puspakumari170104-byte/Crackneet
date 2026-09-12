@@ -147,6 +147,7 @@ public class MainActivity extends Activity {
         content.addView(tv("Quick Practice",18,DARK,true));
         LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER);miniCard(row,"✦","NEET PYQ","Chapter-wise",v->{exam="NEET";showSubjects();});miniCard(row,"⚡","JEE Main","PYQ Practice",v->{exam="JEE Main";showSubjects();});content.addView(row);
         LinearLayout row2=new LinearLayout(this);row2.setGravity(Gravity.CENTER);miniCard(row2,"🧠","Mixed Test","All patterns",v->startInstructions());miniCard(row2,"📊","Analytics","Your progress",v->showProgress());content.addView(row2);
+        LinearLayout ncertRow=new LinearLayout(this); ncertRow.setGravity(Gravity.CENTER); miniCard(ncertRow,"📖","NCERT Corner","Line-based practice",v->showNcertCorner()); content.addView(ncertRow);
         content.addView(tv("Recommended For You",18,DARK,true));
         card("Full Syllabus Mock","180 Questions  •  Timed Test","Start Test",v->startInstructions());
         card("Assertion + Statement Challenge","Mixed advanced practice","Practice",v->showSubjects());
@@ -331,6 +332,36 @@ void statBox(LinearLayout row,String icon,String label,String value,int color){
                 clearSession();runOnUiThread(()->{Toast.makeText(this,"Account deleted.",Toast.LENGTH_LONG).show();showWelcome();});
             }catch(Exception e){runOnUiThread(()->Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show());}
         }).start();
+    }
+
+    void showNcertCorner(){
+        base("NCERT Question Practice",true);
+        content.addView(tv("📖 NCERT Question Practice Corner",23,DARK,true));
+        content.addView(tv("NCERT concepts → NEET-pattern MCQs → fresh data variations",13,MUTED,false));
+        card("Class 11 Biology","Chapter-wise NCERT concept practice • 45-question tests","Start Practice",v->showNcertChapter("Class 11","Biology"));
+        card("Class 12 Biology","NCERT line/concept based NEET practice","Start Practice",v->showNcertChapter("Class 12","Biology"));
+        card("Class 11 Physics + Chemistry","NCERT concepts + numerical variations","Start Practice",v->showNcertChapter("Class 11","Physics & Chemistry"));
+        card("Class 12 Physics + Chemistry","NCERT concepts + NEET-pattern practice","Start Practice",v->showNcertChapter("Class 12","Physics & Chemistry"));
+        card("NCERT In-text Variations","Same concept, changed values/options and fresh framing","Practice",v->startNcertSampleTest());
+        card("NCERT Exemplar Practice","Higher-level concept and application questions","Practice",v->startNcertSampleTest());
+    }
+    void showNcertChapter(String cls,String subject){
+        base("NCERT • "+cls+" • "+subject,true);
+        content.addView(tv("Choose chapter",20,DARK,true));
+        String[] chapters;
+        if(cls.equals("Class 11") && subject.equals("Biology")) chapters=new String[]{"The Living World","Biological Classification","Plant Kingdom","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Structural Organisation in Animals","Cell: The Unit of Life","Biomolecules","Cell Cycle and Cell Division","Transport in Plants","Mineral Nutrition","Photosynthesis in Higher Plants","Respiration in Plants","Plant Growth and Development","Digestion and Absorption","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and their Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration"};
+        else if(cls.equals("Class 12") && subject.equals("Biology")) chapters=new String[]{"Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation","Environmental Issues"};
+        else chapters=new String[]{"Units and Measurements","Motion / Kinematics","Laws of Motion","Work, Energy and Power","Thermodynamics","Equilibrium","Chemical Bonding","Electrochemistry","Chemical Kinetics","Organic Chemistry"};
+        for(final String ch:chapters) card(ch,"NCERT concept + NEET-pattern questions","Practice",v->startNcertSampleTest());
+    }
+    void startNcertSampleTest(){
+        ArrayList<Question> n=new ArrayList<Question>();
+        n.add(new Question("NCERT-001","NEET","Biology","Cell: The Unit of Life","NCERT Based","Easy","Which structure is primarily responsible for controlling the movement of substances into and out of a cell?",new String[]{"Plasma membrane","Cell wall","Nucleolus","Ribosome"},0,"The plasma membrane is selectively permeable and regulates movement of substances across the cell boundary."));
+        n.add(new Question("NCERT-002","NEET","Biology","Biomolecules","Moderate","Which class of biomolecules includes enzymes in most biological systems?",new String[]{"Proteins","Lipids","Minerals","Nucleic acids only"},0,"Most enzymes are proteins; they act as biological catalysts."));
+        n.add(new Question("NCERT-003","NEET","Biology","Cell Cycle and Cell Division","Moderate","If a diploid cell has 20 chromosomes, the number of chromosomes in each daughter cell after mitosis is:",new String[]{"20","10","40","5"},0,"Mitosis maintains chromosome number, so each daughter cell retains 20 chromosomes."));
+        n.add(new Question("NCERT-004","NEET","Biology","Plant Kingdom","Easy","Which group is characterised by embryos that develop within the female sex organ and by a dominant gametophyte in the life cycle?",new String[]{"Bryophytes","Gymnosperms","Angiosperms","Pteridophytes only"},0,"Bryophytes have a dominant gametophyte and the embryo remains attached to and nourished by the parent gametophyte."));
+        n.add(new Question("NCERT-005","NEET","Biology","Human Reproduction","Moderate","In humans, fertilisation normally occurs in the:",new String[]{"Ampullary-isthmic junction of the oviduct","Uterus","Cervix","Vagina"},0,"NCERT describes the ampullary-isthmic junction of the oviduct as the usual site of fertilisation."));
+        test.clear();test.addAll(n);answers.clear();marked.clear();qIndex=0;score=0;duration=15;remainingSeconds=duration*60;showQuestion();
     }
 
     void showQuestionBank(){
