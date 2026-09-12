@@ -1,0 +1,69 @@
+name: CrackNEET Backend Test
+on:
+  push:
+    paths:
+      - "backend/**"
+      - "question_bank.json"
+      - ".github/workflows/backend.yml"
+  workflow_dispatch:
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: crackneet
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d crackneet"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package.json
+      - name: Install dependencies
+        run: npm install
+      - name: Start API
+        env:
+          PORT: 8080
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/crackneet
+          CORS_ORIGIN: "*"
+        run: |
+          node src/server.js > /tmp/crackneet-api.log 2>&1 &
+          echo $! > /tmp/crackneet-api.pid
+      - name: Wait for health
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8080/api/health; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/crackneet-api.log
+          exit 1
+      - name: Test authentication, questions and progress
+        run: |
+          set -e
+          curl -fsS http://127.0.0.1:8080/api/questions?exam=NEET > /tmp/questions.json
+          node -e 'const x=require("/tmp/questions.json"); if(!x.count) process.exit(1);'
+          curl -fsS -X POST http://127.0.0.1:8080/api/auth/register -H "Content-Type: application/json" -d '{"name":"CI Test","email":"ci-test@example.com","password":"StrongPass123"}' > /tmp/register.json
+          TOKEN=$(node -e 'process.stdout.write(require("/tmp/register.json").token)')
+          curl -fsS http://127.0.0.1:8080/api/users/me -H "Authorization: Bearer $TOKEN"
+          curl -fsS http://127.0.0.1:8080/api/users/me/progress -H "Authorization: Bearer $TOKEN"
+          curl -fsS -X POST http://127.0.0.1:8080/api/tests/submit -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"exam":"NEET","score":4,"total":5,"correct":4,"wrong":1,"skipped":0,"durationSeconds":120,"answers":[]}'
+          curl -fsS -X DELETE http://127.0.0.1:8080/api/auth/account -H "Authorization: Bearer $TOKEN"
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f /tmp/crackneet-api.pid ]; then kill $(cat /tmp/crackneet-api.pid) || true; fi
