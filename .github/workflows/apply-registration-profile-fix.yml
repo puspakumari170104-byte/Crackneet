@@ -7,50 +7,28 @@ permissions:
   contents: write
 jobs:
   patch:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Replace Java methods safely
+      - name: Patch registration session and profile
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('app/src/main/java/com/crackneet/app/MainActivity.java')
           s=p.read_text()
-          def replace_method(src,start_marker,next_marker,new_method):
-              a=src.find(start_marker)
-              if a<0: raise SystemExit('missing '+start_marker)
-              b=src.find(next_marker,a+len(start_marker))
-              if b<0: raise SystemExit('missing '+next_marker)
-              return src[:a]+new_method+'\n    '+src[b:]
 
-          profile='''    void showProfile(){
-          base("Profile",false);
-          LinearLayout head=box();head.setBackground(bg(DARK,20));head.setGravity(Gravity.CENTER_VERTICAL);
-          LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);
-          android.content.SharedPreferences sp=getSharedPreferences("crackneet_session",MODE_PRIVATE);
-          String profileName=sp.getString("name","Student");String profileEmail=sp.getString("email","");String profileId=sp.getString("user_id","");String memberSince=sp.getString("member_since","");
-          String initials=profileName.trim().length()>0?profileName.trim().substring(0,Math.min(2,profileName.trim().length())).toUpperCase():"ST";
-          TextView av=tv(initials,22,Color.WHITE,true);av.setGravity(Gravity.CENTER);av.setBackground(bg(GREEN,50));row.addView(av,new LinearLayout.LayoutParams(dp(62),dp(62)));
-          LinearLayout info=box();info.setPadding(dp(14),0,0,0);info.addView(tv(profileName,20,Color.WHITE,true));info.addView(tv(profileEmail.length()>0?profileEmail:"Email not available",12,Color.rgb(200,225,220),false));info.addView(tv(profileId.length()>0?"Account ID: "+profileId:"CrackNEET account",11,GREEN,true));if(memberSince.length()>0)info.addView(tv("Member since: "+memberSince,11,Color.rgb(200,225,220),false));row.addView(info);head.addView(row);content.addView(head,new LinearLayout.LayoutParams(-1,dp(140)));
-          content.addView(tv("Account Details",18,DARK,true));card("👤 Full Name",profileName,"Saved account name",v->{});card("✉ Email",profileEmail.length()>0?profileEmail:"Not available","Registered email",v->{});card("🆔 Account ID",profileId.length()>0?profileId:"Not available","Unique account identifier",v->{});card("📅 Member Since",memberSince.length()>0?memberSince:"Saved on registration","Account creation date",v->{});
-          LinearLayout stats=new LinearLayout(this);statBox(stats,"🔥","Day Streak","7",GREEN);statBox(stats,"📝","Tests Taken","18",GREEN);statBox(stats,"🎯","Avg Accuracy","65%",GREEN);content.addView(stats);
-          content.addView(tv("My Learning",18,DARK,true));card("My Performance","Accuracy, subject scores and weak topics","Open",v->showProgress());card("Test History","All completed tests and scores","View",v->showAnalysisSafe());card("Revision History","Recently practiced chapters and questions","View",v->showNotes());
-          content.addView(tv("Account",18,DARK,true));card("Settings","Notifications • Theme • Account","Open",v->showSettings());card("Delete Account","Permanently delete your CrackNEET account and progress","Delete",v->confirmDeleteAccount());card("Premium","Unlock complete test series and advanced analytics","₹99 / month",v->showPremium());card("Help & Support","FAQs • Contact support","Open",v->new AlertDialog.Builder(this).setTitle("Help & Support").setMessage("For support, please contact CrackNEET support.").setPositiveButton("OK",null).show());
-          if(authToken.length()>0) refreshProfileFromServer();
-      }
-      void refreshProfileFromServer(){
-          final String token=authToken;new Thread(() -> {try{HttpURLConnection con=(HttpURLConnection)new URL(API_BASE+"/api/users/me").openConnection();con.setRequestMethod("GET");con.setRequestProperty("Authorization","Bearer "+token);con.setConnectTimeout(10000);con.setReadTimeout(12000);int code=con.getResponseCode();InputStream is=code>=400?con.getErrorStream():con.getInputStream();if(code!=200||is==null)return;BufferedReader br=new BufferedReader(new InputStreamReader(is,"UTF-8"));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();JSONObject u=new JSONObject(sb.toString()).getJSONObject("user");String n=u.optString("name","Student"),e=u.optString("email","");long id=u.optLong("id",0);getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putString("name",n).putString("email",e).putString("user_id",String.valueOf(id)).apply();runOnUiThread(()->showProfile());}catch(Exception ignored){}}).start();
-      }
-'''
-          s=replace_method(s,'    void showProfile(){','    void showAnalysisSafe(){',profile)
+          s=s.replace('String pendingProfileName="",pendingProfileEmail="";', 'String pendingProfileName="",pendingProfileEmail="",pendingProfileCreatedAt="";', 1)
+          s=s.replace('void saveSession(long id,String token){ userId=id; authToken=token; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putLong("userId",id).putString("token",token).putString("name",profileNameSafe(id)).putString("email",profileEmailSafe(id)).apply(); }', 'void saveSession(long id,String token){ userId=id; authToken=token; getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putLong("userId",id).putString("token",token).putString("name",profileNameSafe(id)).putString("email",profileEmailSafe(id)).putString("createdAt",pendingProfileCreatedAt).apply(); }', 1)
+          s=s.replace('pendingProfileEmail=u.optString("email",""); saveSession(u.getLong("id"),out.getString("token"));', 'pendingProfileEmail=u.optString("email",""); pendingProfileCreatedAt=u.optString("created_at",""); saveSession(u.getLong("id"),out.getString("token"));', 1)
+          s=s.replace('pendingProfileEmail=u.optString("email","");saveSession(u.getLong("id"),out.getString("token"));', 'pendingProfileEmail=u.optString("email",""); pendingProfileCreatedAt=u.optString("created_at","");saveSession(u.getLong("id"),out.getString("token"));', 1)
 
-          register='''    void register(final String name,final String email,final String password){
-          if(name.trim().length()<2||email.trim().length()<5||password.length()<8){Toast.makeText(this,"Enter name, email and an 8+ character password.",Toast.LENGTH_SHORT).show();return;}
-          new Thread(() -> {try{HttpURLConnection con=(HttpURLConnection)new URL(API_BASE+"/api/auth/register").openConnection();con.setRequestMethod("POST");con.setDoOutput(true);con.setConnectTimeout(20000);con.setReadTimeout(25000);con.setRequestProperty("Content-Type","application/json; charset=UTF-8");con.setRequestProperty("Accept","application/json");JSONObject body=new JSONObject();body.put("name",name.trim());body.put("email",email.trim().toLowerCase());body.put("password",password);OutputStream os=con.getOutputStream();os.write(body.toString().getBytes("UTF-8"));os.close();int code=con.getResponseCode();InputStream is=code>=400?con.getErrorStream():con.getInputStream();if(is==null)throw new Exception("Server returned HTTP "+code);BufferedReader br=new BufferedReader(new InputStreamReader(is,"UTF-8"));StringBuilder sb=new StringBuilder();String line;while((line=br.readLine())!=null)sb.append(line);br.close();JSONObject out=new JSONObject(sb.toString());if(code!=201)throw new Exception(out.optString("error","Registration failed (HTTP "+code+")"));JSONObject u=out.getJSONObject("user");long id=u.getLong("id");String n=u.optString("name",name.trim());String e=u.optString("email",email.trim().toLowerCase());pendingProfileName=n;pendingProfileEmail=e;saveSession(id,out.getString("token"));getSharedPreferences("crackneet_session",MODE_PRIVATE).edit().putString("name",n).putString("email",e).putString("user_id",String.valueOf(id)).putString("member_since",new java.text.SimpleDateFormat("dd MMM yyyy",java.util.Locale.US).format(new java.util.Date())).apply();runOnUiThread(()->{Toast.makeText(this,"Registration successful. Profile saved.",Toast.LENGTH_LONG).show();showDashboard();});}catch(Exception e){runOnUiThread(()->Toast.makeText(this,e.getMessage()==null?"Registration failed":e.getMessage(),Toast.LENGTH_LONG).show());}}).start();
-      }
-'''
-          # The method may already contain earlier timeout changes; replace it regardless.
-          s=replace_method(s,'    void register(final String name,final String email,final String password){','    void showLogin(){',register)
+          if 'String profileCreatedAt=sp.getString("createdAt","");' not in s:
+              s=s.replace('profileName=sp.getString("name","Student"); profileEmail=sp.getString("email","");', 'profileName=sp.getString("name","Student"); profileEmail=sp.getString("email","");\n        String profileCreatedAt=sp.getString("createdAt","");', 1)
+
+          if 'Account ID:  "+userId' not in s:
+              s=s.replace('content.addView(head,new LinearLayout.LayoutParams(-1,dp(120)));\n        LinearLayout stats=', 'content.addView(head,new LinearLayout.LayoutParams(-1,dp(120)));\n        LinearLayout accountInfo=box(); accountInfo.setBackground(bg(Color.WHITE,18));\n        accountInfo.addView(tv("Account ID:  "+userId,14,TEXT,true));\n        String memberSince=profileCreatedAt.length()>0?profileCreatedAt.replace("T"," ").replace("Z",""):"Not available";\n        accountInfo.addView(tv("Member Since:  "+memberSince,13,MUTED,false));\n        content.addView(accountInfo,new LinearLayout.LayoutParams(-1,dp(92)));\n        LinearLayout stats=', 1)
+
           p.write_text(s)
           PY
       - name: Commit changes
@@ -58,6 +36,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app/src/main/java/com/crackneet/app/MainActivity.java
-          if git diff --cached --quiet; then exit 0; fi
+          if git diff --cached --quiet; then echo "No changes needed"; exit 0; fi
           git commit -m "Save registration data and show it in profile"
           git push
